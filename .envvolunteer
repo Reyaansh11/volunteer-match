@@ -1,0 +1,3 @@
+postgresql://neondb_owner:npg_1GARDZX5WxsE@ep-sweet-bonus-ai8o96t3-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require="postgresql://USER:PASSWORD@HOST:5432/volunteer_match?schema=public"
+# Optional: defaults to assets/templates/2022-NHS-Service-Hours-Tracking-Template.docx
+NHS_TEMPLATE_PATH=""

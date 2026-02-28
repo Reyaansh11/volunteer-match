@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { UserRole } from "@prisma/client";
+import { getCurrentUser } from "@/lib/auth";
 
 const highlights = [
   "Students create a profile with skills, parent consent, and personal goals.",
@@ -6,7 +8,9 @@ const highlights = [
   "The platform ranks matches internally and presents clear, approachable lists."
 ];
 
-export default function Home() {
+export default async function Home() {
+  const user = await getCurrentUser();
+
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-10 px-6 py-14">
       <section className="rounded-2xl border border-brand-700/20 bg-white/85 p-9 shadow-sm">
@@ -38,14 +42,36 @@ export default function Home() {
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Explore</h2>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link href="/students" className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200">
-            Browse Students
-          </Link>
-          <Link href="/opportunities" className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200">
-            Browse Opportunities
-          </Link>
-        </div>
+        {!user ? (
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link href="/opportunities" className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200">
+              View Local Opportunities
+            </Link>
+            <Link href="/register/student" className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
+              Start as Student
+            </Link>
+          </div>
+        ) : null}
+        {user?.role === UserRole.STUDENT ? (
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link href="/dashboard/student" className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
+              Explore Nearby Opportunities
+            </Link>
+            <Link href="/opportunities" className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200">
+              View Opportunity Details
+            </Link>
+          </div>
+        ) : null}
+        {user?.role === UserRole.ORG ? (
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link href="/dashboard/org" className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
+              View Ranked Student Matches
+            </Link>
+            <Link href="/dashboard/org" className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200">
+              Post or Manage Opportunities
+            </Link>
+          </div>
+        ) : null}
       </section>
     </main>
   );
