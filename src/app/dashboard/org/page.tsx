@@ -1,0 +1,290 @@
+import Link from "next/link";
+import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
+import { redirect } from "next/navigation";
+import { rankStudentsForOpportunity } from "@/lib/matching";
+import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/guards";
+
+type OrgDashboardProps = {
+  searchParams: Promise<{ opportunityId?: string; error?: string; success?: string }>;
+};
+
+export default async function OrgDashboardPage({ searchParams }: OrgDashboardProps) {
+  const user = await requireRole(UserRole.ORG);
+  const params = await searchParams;
+
+  if (!user.org) {
+    redirect("/register/org");
+  }
+
+  const org = await prisma.orgProfile.findUnique({
+    where: { id: user.org.id },
+    include: {
+      opportunities: {
+        include: {
+          skills: {
+            include: {
+              skill: true
+            }
+          },
+          orgProfile: true,
+          matchRequests: {
+            include: {
+              serviceHourForm: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: "desc"
+        }
+      }
+    }
+  });
+
+  if (!org) {
+    redirect("/register/org");
+  }
+
+  const selectedOpportunityId = Number(params.opportunityId || org.opportunities[0]?.id || 0);
+  const selectedOpportunity = org.opportunities.find((opp) => opp.id === selectedOpportunityId) || org.opportunities[0] || null;
+
+  const students = await prisma.studentProfile.findMany({
+    include: {
+      user: {
+        select: {
+          email: true
+        }
+      },
+      skills: {
+        include: {
+          skill: true
+        }
+      }
+    }
+  });
+
+  const rankedStudents = selectedOpportunity ? rankStudentsForOpportunity(selectedOpportunity, students, 30) : [];
+
+  const requests = await prisma.matchRequest.findMany({
+    where: {
+      orgProfileId: org.id
+    },
+    include: {
+      student: {
+        include: {
+          user: true
+        }
+      },
+      opportunity: true,
+      serviceHourForm: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+
+  const incomingRequests = requests.filter((req) => req.status === MatchRequestStatus.PENDING && req.initiatedBy === RequestInitiator.STUDENT);
+  const acceptedRequests = requests.filter((req) => req.status === MatchRequestStatus.ACCEPTED);
+  const requestKeyToStatus = new Map(requests.map((req) => [`${req.opportunityId}:${req.studentId}`, req.status]));
+
+  return (
+    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-6 py-12">
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h1 className="text-2xl font-semibold text-slate-900">Program Dashboard</h1>
+        <p className="mt-2 text-sm text-slate-700">{org.organization}</p>
+        <p className="mt-2 text-sm text-slate-700">Contact: {org.contactName} | {org.contactEmail}{org.contactPhone ? ` | ${org.contactPhone}` : ""}</p>
+        <p className="mt-2 text-sm text-slate-700">{org.description || "Add organization details in your profile as needed."}</p>
+        {params.error ? <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{params.error}</p> : null}
+        {params.success ? <p className="mt-3 rounded-md bg-green-50 p-2 text-sm text-green-700">{params.success}</p> : null}
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900">Incoming Match Requests</h2>
+        <div className="mt-4 grid gap-3">
+          {incomingRequests.length === 0 ? (
+            <p className="text-sm text-slate-700">No incoming requests.</p>
+          ) : (
+            incomingRequests.map((req) => (
+              <article key={req.id} className="rounded-lg border border-slate-200 p-4">
+                <p className="text-sm text-slate-800">
+                  <span className="font-medium">{req.student.fullName}</span> requested <span className="font-medium">{req.opportunity.title}</span>
+                </p>
+                <p className="mt-1 text-sm text-slate-700">Message: {req.message || "No message provided"}</p>
+                <div className="mt-3 flex gap-2">
+                  <form action="/api/match-requests/respond" method="post">
+                    <input type="hidden" name="requestId" value={req.id} />
+                    <input type="hidden" name="action" value="accept" />
+                    <input type="hidden" name="redirectTo" value={`/dashboard/org?opportunityId=${selectedOpportunity?.id || ""}`} />
+                    <button type="submit" className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500">
+                      Accept
+                    </button>
+                  </form>
+                  <form action="/api/match-requests/respond" method="post">
+                    <input type="hidden" name="requestId" value={req.id} />
+                    <input type="hidden" name="action" value="reject" />
+                    <input type="hidden" name="redirectTo" value={`/dashboard/org?opportunityId=${selectedOpportunity?.id || ""}`} />
+                    <button type="submit" className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-200">
+                      Reject
+                    </button>
+                  </form>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900">Post New Opportunity</h2>
+        <form action="/api/org/opportunities/create" method="post" className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="text-sm font-medium text-slate-700">
+            Title *
+            <input name="title" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Required Commitment *
+            <input name="requiredCommitment" required placeholder="2 hours/week" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="md:col-span-2 text-sm font-medium text-slate-700">
+            Description *
+            <textarea name="description" required rows={3} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Availability *
+            <input name="availability" required placeholder="Tue 16:00-18:00" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Radius (km)
+            <input name="radiusKm" type="number" defaultValue={20} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Contact Email *
+            <input name="contactEmail" defaultValue={org.contactEmail} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Contact Phone
+            <input name="contactPhone" defaultValue={org.contactPhone || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="md:col-span-2 text-sm font-medium text-slate-700">
+            Required Skills (comma-separated)
+            <input name="skills" placeholder="conversation, public speaking" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <button type="submit" className="md:col-span-2 rounded-md bg-brand-700 px-4 py-2 font-medium text-white hover:bg-brand-500">
+            Post Opportunity
+          </button>
+        </form>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900">Your Opportunities</h2>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {org.opportunities.length === 0 ? (
+            <p className="text-sm text-slate-700">No opportunities yet.</p>
+          ) : (
+            org.opportunities.map((opp) => (
+              <Link
+                key={opp.id}
+                href={`/dashboard/org?opportunityId=${opp.id}`}
+                className={`rounded-md px-3 py-1.5 text-sm ${selectedOpportunity?.id === opp.id ? "bg-brand-700 text-white" : "bg-slate-100 text-slate-800 hover:bg-slate-200"}`}
+              >
+                {opp.title}
+              </Link>
+            ))
+          )}
+        </div>
+      </section>
+
+      {selectedOpportunity && (
+        <section className="grid gap-4">
+          <h2 className="text-xl font-semibold text-slate-900">Ranked Students for: {selectedOpportunity.title}</h2>
+          {rankedStudents.map((student) => {
+            const status = requestKeyToStatus.get(`${selectedOpportunity.id}:${student.studentId}`);
+            const isAccepted = status === MatchRequestStatus.ACCEPTED;
+            const canRequest = !status || status === MatchRequestStatus.REJECTED || status === MatchRequestStatus.CANCELLED;
+
+            return (
+              <article key={student.studentId} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Rank #{student.rank}</p>
+                <h3 className="mt-1 text-lg font-semibold text-slate-900">{student.fullName}</h3>
+                {isAccepted ? <p className="mt-2 text-sm text-slate-700">Email: {student.email}</p> : <p className="mt-2 text-sm text-slate-700">Email is revealed after accepted match request.</p>}
+                <p className="mt-1 text-sm text-slate-700">School: {student.school || "Not provided"}</p>
+                <p className="mt-1 text-sm text-slate-700">Program: {student.programAffiliation || "Not provided"}</p>
+                <p className="mt-1 text-sm text-slate-700">Distance: {student.distanceKm} km</p>
+                <p className="mt-1 text-sm text-slate-700">Availability: {student.availability}</p>
+                <p className="mt-1 text-sm text-slate-700">Matched skills: {student.skillsMatched.join(", ") || "None"}</p>
+
+                {status ? <p className="mt-2 text-sm text-slate-700">Request status: {status}</p> : null}
+
+                {canRequest ? (
+                  <form action="/api/match-requests/create" method="post" className="mt-3 flex flex-col gap-2">
+                    <input type="hidden" name="opportunityId" value={selectedOpportunity.id} />
+                    <input type="hidden" name="studentId" value={student.studentId} />
+                    <input type="hidden" name="redirectTo" value={`/dashboard/org?opportunityId=${selectedOpportunity.id}`} />
+                    <input
+                      name="message"
+                      placeholder="Optional message to student"
+                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    />
+                    <button type="submit" className="w-fit rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500">
+                      Send Match Request
+                    </button>
+                  </form>
+                ) : null}
+              </article>
+            );
+          })}
+        </section>
+      )}
+
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900">Accepted Matches and Service Forms</h2>
+        <div className="mt-4 grid gap-4">
+          {acceptedRequests.length === 0 ? (
+            <p className="text-sm text-slate-700">No accepted matches yet.</p>
+          ) : (
+            acceptedRequests.map((req) => (
+              <article key={req.id} className="rounded-lg border border-slate-200 p-4">
+                <p className="font-medium text-slate-900">{req.opportunity.title}</p>
+                <p className="mt-1 text-sm text-slate-700">Student: {req.student.fullName} ({req.student.user.email})</p>
+                <p className="mt-1 text-sm text-slate-700">Request message: {req.message || "No message"}</p>
+
+                {req.serviceHourForm ? (
+                  <>
+                    <p className="mt-2 text-sm text-green-700">Service hour form filled.</p>
+                    <a
+                      href={`/api/service-hours/download/${req.serviceHourForm.id}`}
+                      className="mt-2 inline-block rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500"
+                    >
+                      Download NHS DOCX
+                    </a>
+                    <pre className="mt-2 whitespace-pre-wrap rounded-md bg-slate-50 p-3 text-xs text-slate-700">{req.serviceHourForm.generatedText}</pre>
+                  </>
+                ) : (
+                  <form action="/api/service-hours/fill" method="post" className="mt-3 grid gap-2 md:grid-cols-3">
+                    <input type="hidden" name="matchRequestId" value={req.id} />
+                    <input type="hidden" name="redirectTo" value={`/dashboard/org?opportunityId=${selectedOpportunity?.id || ""}`} />
+                    <label className="text-sm font-medium text-slate-700">
+                      Hours Completed
+                      <input name="hoursCompleted" type="number" step="0.25" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                    </label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Service Date
+                      <input name="serviceDate" type="date" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                    </label>
+                    <label className="text-sm font-medium text-slate-700 md:col-span-3">
+                      Activity Notes
+                      <textarea name="activityNotes" rows={2} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                    </label>
+                    <button type="submit" className="w-fit rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500">
+                      Fill Service Hour Form
+                    </button>
+                  </form>
+                )}
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+    </main>
+  );
+}

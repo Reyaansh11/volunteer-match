@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ORG
+}
+
+enum MatchRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum RequestInitiator {
+  STUDENT
+  ORG
+}
+
+model User {
+  id           Int              @id @default(autoincrement())
+  email        String           @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  sessions     Session[]
+  student      StudentProfile?
+  org          OrgProfile?
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StudentProfile {
+  id                 Int                  @id @default(autoincrement())
+  userId             Int                  @unique
+  fullName           String
+  school             String?
+  zipCode            String
+  city               String?
+  state              String?
+  lat                Float
+  lng                Float
+  maxDistanceKm      Float                @default(25)
+  availability       String
+  personalStatement  String?
+  letterOfRecUrl     String?
+  programAffiliation String?
+  parentConsent      Boolean              @default(false)
+  phone              String?
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills             StudentSkill[]
+  applications       Application[]
+  matches            Match[]              @relation("StudentMatches")
+  matchRequests      MatchRequest[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+model OrgProfile {
+  id            Int                   @id @default(autoincrement())
+  userId         Int                   @unique
+  organization   String
+  category       String                @default("Senior Home")
+  zipCode        String
+  city           String?
+  state          String?
+  lat            Float
+  lng            Float
+  description    String?
+  contactName    String
+  contactEmail   String
+  contactPhone   String?
+  websiteUrl     String?
+  volunteerNotes String?
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  opportunities  Opportunity[]
+  matchRequests  MatchRequest[]
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+}
+
+model Opportunity {
+  id                 Int                    @id @default(autoincrement())
+  orgProfileId       Int
+  title              String
+  description        String
+  requiredCommitment String
+  availability       String
+  contactEmail       String
+  contactPhone       String?
+  radiusKm           Float                  @default(20)
+  orgProfile         OrgProfile             @relation(fields: [orgProfileId], references: [id], onDelete: Cascade)
+  skills             OpportunitySkill[]
+  applications       Application[]
+  matches            Match[]                @relation("OpportunityMatches")
+  matchRequests      MatchRequest[]
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+}
+
+model Skill {
+  id            Int                 @id @default(autoincrement())
+  name          String              @unique
+  studentLinks  StudentSkill[]
+  oppLinks      OpportunitySkill[]
+}
+
+model StudentSkill {
+  studentId Int
+  skillId   Int
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skill     Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, skillId])
+}
+
+model OpportunitySkill {
+  opportunityId Int
+  skillId       Int
+  required      Boolean      @default(true)
+  opportunity   Opportunity  @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  skill         Skill        @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([opportunityId, skillId])
+}
+
+model Application {
+  id            Int            @id @default(autoincrement())
+  studentId     Int
+  opportunityId Int
+  status        String         @default("PENDING")
+  student       StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity    @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+
+  @@unique([studentId, opportunityId])
+}
+
+model Match {
+  id            Int            @id @default(autoincrement())
+  studentId     Int
+  opportunityId Int
+  status        String         @default("PROPOSED")
+  score         Float
+  createdAt     DateTime       @default(now())
+  student       StudentProfile @relation("StudentMatches", fields: [studentId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity    @relation("OpportunityMatches", fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, opportunityId])
+}
+
+model MatchRequest {
+  id              Int                @id @default(autoincrement())
+  studentId       Int
+  orgProfileId    Int
+  opportunityId   Int
+  initiatedBy     RequestInitiator
+  status          MatchRequestStatus @default(PENDING)
+  message         String?
+  createdAt       DateTime           @default(now())
+  respondedAt     DateTime?
+  student         StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  orgProfile      OrgProfile         @relation(fields: [orgProfileId], references: [id], onDelete: Cascade)
+  opportunity     Opportunity        @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  serviceHourForm ServiceHourForm?
+}
+
+model ServiceHourForm {
+  id             Int          @id @default(autoincrement())
+  matchRequestId Int          @unique
+  status         String       @default("FILLED")
+  serviceDate    DateTime?
+  hoursCompleted Float?
+  activityNotes  String?
+  filledByName   String
+  studentName    String
+  studentEmail   String
+  orgName        String
+  orgEmail       String
+  opportunity    String
+  generatedText  String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  matchRequest   MatchRequest @relation(fields: [matchRequestId], references: [id], onDelete: Cascade)
+}
