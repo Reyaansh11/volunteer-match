@@ -235,6 +235,17 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                 {isAccepted ? <p className="mt-2 text-sm text-slate-700">Email: {student.email}</p> : <p className="mt-2 text-sm text-slate-700">Email is revealed after accepted match request.</p>}
                 <p className="mt-1 text-sm text-slate-700">School: {student.school || "Not provided"}</p>
                 <p className="mt-1 text-sm text-slate-700">Program: {student.programAffiliation || "Not provided"}</p>
+                <p className="mt-1 text-sm text-slate-700">Personal statement: {student.personalStatement || "Not provided"}</p>
+                <p className="mt-1 text-sm text-slate-700">
+                  Letter of recommendation:{" "}
+                  {student.letterOfRecUrl ? (
+                    <a href={student.letterOfRecUrl} target="_blank" rel="noreferrer" className="text-brand-700 underline">
+                      View letter
+                    </a>
+                  ) : (
+                    "Not provided"
+                  )}
+                </p>
                 <p className="mt-1 text-sm text-slate-700">Distance: {student.distanceKm} km</p>
                 <p className="mt-1 text-sm text-slate-700">Availability: {student.availability}</p>
                 <p className="mt-1 text-sm text-slate-700">Matched skills: {student.skillsMatched.join(", ") || "None"}</p>

@@ -24,6 +24,8 @@ export type RankedStudent = {
   email: string;
   school: string | null;
   programAffiliation: string | null;
+  personalStatement: string | null;
+  letterOfRecUrl: string | null;
   rank: number;
   distanceKm: number;
   availability: string;
