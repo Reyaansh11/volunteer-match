@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -59,6 +60,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           </div>
         </header>
         {children}
+        <Analytics />
       </body>
     </html>
   );
