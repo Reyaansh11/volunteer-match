@@ -15,7 +15,7 @@ export default async function Home() {
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-14">
       <section className="relative overflow-hidden rounded-3xl border border-brand-700/20 bg-white/90 p-10 shadow-sm">
         <div className="pointer-events-none absolute -right-14 -top-12 h-44 w-44 rounded-full bg-brand-50" />
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-500">Students + Community Programs</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-500">Students Serving, Communities Growing</p>
         <h1 className="mt-4 max-w-3xl text-5xl font-semibold tracking-tight text-slate-900">ServeConnect</h1>
         <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-700">
           A community-first platform for students and local organizations to find each other, confirm real fit, and track verified service hours.
@@ -89,6 +89,32 @@ export default async function Home() {
             Post opportunities, review ranked candidates, manage requests, and finalize service-hour forms with one workflow after participation is complete.
           </p>
         </article>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900">How ServeConnect Works</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <article className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <h3 className="text-base font-semibold text-slate-900">Student Journey</h3>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
+              <li>Create your account and build a profile with your strengths, availability, and goals.</li>
+              <li>Review personalized, ranked opportunities that fit your schedule and interests.</li>
+              <li>Send match requests and connect once organizations accept.</li>
+              <li>Complete your service and track your impact.</li>
+              <li>Download verified, ready-to-submit service-hour forms for NHS and similar programs.</li>
+            </ol>
+          </article>
+          <article className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <h3 className="text-base font-semibold text-slate-900">Organization Journey</h3>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
+              <li>Register your organization and share volunteer needs, schedules, and contact details.</li>
+              <li>Post opportunities and see students ranked by fit.</li>
+              <li>Send or respond to match requests with full control over approvals.</li>
+              <li>Coordinate service directly after a match is confirmed.</li>
+              <li>Auto-fill and issue digital service-hour verification forms after completion.</li>
+            </ol>
+          </article>
+        </div>
       </section>
     </main>
   );
