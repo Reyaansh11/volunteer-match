@@ -6,9 +6,10 @@ type MatchRequestEmailParams = {
 
 export async function sendMatchRequestEmail(params: MatchRequestEmailParams) {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM;
+  const from = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM || "onboarding@resend.dev";
+  const to = process.env.RESEND_TEST_TO || params.to;
 
-  if (!apiKey || !from) {
+  if (!apiKey) {
     return { sent: false, reason: "Email provider not configured" as const };
   }
 
@@ -21,7 +22,7 @@ export async function sendMatchRequestEmail(params: MatchRequestEmailParams) {
       },
       body: JSON.stringify({
         from,
-        to: params.to,
+        to,
         subject: params.subject,
         text: params.text
       })

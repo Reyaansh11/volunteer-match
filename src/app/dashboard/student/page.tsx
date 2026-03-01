@@ -6,11 +6,12 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
 
 type StudentDashboardProps = {
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; editProfile?: string }>;
 };
 
 export default async function StudentDashboardPage({ searchParams }: StudentDashboardProps) {
   const params = await searchParams;
+  const showEditProfile = params.editProfile === "1";
   const user = await requireRole(UserRole.STUDENT);
 
   if (!user.student) {
@@ -71,7 +72,12 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-6 py-12">
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Student Dashboard</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold text-slate-900">Student Dashboard</h1>
+          <a href="/dashboard/student?editProfile=1" className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+            Edit Profile
+          </a>
+        </div>
         <p className="mt-2 text-sm text-slate-700">Welcome, {student.fullName}. Send match requests and manage responses here.</p>
         <div className="mt-4 grid gap-2 text-sm text-slate-700 md:grid-cols-2">
           <p>Email: {user.email}</p>
@@ -83,9 +89,16 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         {params.success ? <p className="mt-3 rounded-md bg-green-50 p-2 text-sm text-green-700">{params.success}</p> : null}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Edit Your Profile</h2>
-        <form action="/api/profile/student/update" method="post" className="mt-4 grid gap-3 md:grid-cols-2">
+      {showEditProfile ? (
+        <section className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold text-slate-900">Edit Your Profile</h2>
+              <a href="/dashboard/student" className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-200">
+                Close
+              </a>
+            </div>
+            <form action="/api/profile/student/update" method="post" className="grid gap-3 md:grid-cols-2">
           <label className="text-sm font-medium text-slate-700">
             Full Name *
             <input name="fullName" defaultValue={student.fullName} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
@@ -162,8 +175,10 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           <button type="submit" className="md:col-span-2 w-fit rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
             Save Profile Changes
           </button>
-        </form>
-      </section>
+            </form>
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Incoming Match Requests</h2>

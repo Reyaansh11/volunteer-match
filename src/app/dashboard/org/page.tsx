@@ -8,12 +8,13 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
 
 type OrgDashboardProps = {
-  searchParams: Promise<{ opportunityId?: string; error?: string; success?: string }>;
+  searchParams: Promise<{ opportunityId?: string; error?: string; success?: string; editProfile?: string }>;
 };
 
 export default async function OrgDashboardPage({ searchParams }: OrgDashboardProps) {
   const user = await requireRole(UserRole.ORG);
   const params = await searchParams;
+  const showEditProfile = params.editProfile === "1";
 
   if (!user.org) {
     redirect("/register/org");
@@ -49,6 +50,8 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
 
   const selectedOpportunityId = Number(params.opportunityId || org.opportunities[0]?.id || 0);
   const selectedOpportunity = org.opportunities.find((opp) => opp.id === selectedOpportunityId) || org.opportunities[0] || null;
+  const editProfileHref = selectedOpportunity ? `/dashboard/org?opportunityId=${selectedOpportunity.id}&editProfile=1` : "/dashboard/org?editProfile=1";
+  const closeProfileHref = selectedOpportunity ? `/dashboard/org?opportunityId=${selectedOpportunity.id}` : "/dashboard/org";
 
   const students = await prisma.studentProfile.findMany({
     include: {
@@ -98,7 +101,12 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-6 py-12">
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Program Dashboard</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold text-slate-900">Program Dashboard</h1>
+          <a href={editProfileHref} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+            Edit Profile
+          </a>
+        </div>
         <p className="mt-2 text-sm text-slate-700">{org.organization}</p>
         <p className="mt-2 text-sm text-slate-700">Contact: {org.contactName} | {org.contactEmail}{org.contactPhone ? ` | ${org.contactPhone}` : ""}</p>
         <p className="mt-2 text-sm text-slate-700">{org.description || "Add organization details in your profile as needed."}</p>
@@ -106,9 +114,16 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         {params.success ? <p className="mt-3 rounded-md bg-green-50 p-2 text-sm text-green-700">{params.success}</p> : null}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Edit Program Profile</h2>
-        <form action="/api/profile/org/update" method="post" className="mt-4 grid gap-3 md:grid-cols-2">
+      {showEditProfile ? (
+        <section className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold text-slate-900">Edit Program Profile</h2>
+              <a href={closeProfileHref} className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-200">
+                Close
+              </a>
+            </div>
+            <form action="/api/profile/org/update" method="post" className="grid gap-3 md:grid-cols-2">
           <label className="text-sm font-medium text-slate-700">
             Organization Name *
             <input name="organization" defaultValue={org.organization} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
@@ -156,8 +171,10 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
           <button type="submit" className="md:col-span-2 w-fit rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
             Save Program Changes
           </button>
-        </form>
-      </section>
+            </form>
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Incoming Match Requests</h2>
