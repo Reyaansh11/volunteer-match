@@ -313,9 +313,6 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                 <p className="mt-1 text-sm text-slate-700">Distance: {student.distanceKm} km</p>
                 <p className="mt-1 text-sm text-slate-700">Availability: {student.availability}</p>
                 <p className="mt-1 text-sm text-slate-700">Matched skills: {student.skillsMatched.join(", ") || "None"}</p>
-                <p className="mt-1 text-sm text-slate-700">
-                  Average review: {student.averageRating ? `${student.averageRating}/5` : "No reviews yet"} ({student.reviewCount} total)
-                </p>
 
                 {status ? <p className="mt-2 text-sm text-slate-700">Request status: {status}</p> : null}
 
@@ -353,10 +350,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                 <p className="mt-1 text-sm text-slate-700">Request message: {req.message || "No message"}</p>
 
                 {req.studentReview ? (
-                  <p className="mt-2 text-sm text-slate-700">
-                    Your review: {req.studentReview.rating}/5
-                    {req.studentReview.feedback ? ` - ${req.studentReview.feedback}` : ""}
-                  </p>
+                  <p className="mt-2 text-sm text-slate-700">Review submitted for this student.</p>
                 ) : (
                   <form action="/api/reviews/create" method="post" className="mt-3 grid gap-2 rounded-md border border-slate-200 p-3">
                     <input type="hidden" name="matchRequestId" value={req.id} />
