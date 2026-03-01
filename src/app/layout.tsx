@@ -20,10 +20,11 @@ export const dynamic = "force-dynamic";
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const user = await getCurrentUser();
   const navItemClass = "w-full rounded-md px-3 py-2 text-center text-sm font-medium";
+  const currentYear = new Date().getFullYear();
 
   return (
     <html lang="en">
-      <body>
+      <body className="min-h-screen bg-slate-50 text-slate-900">
         <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/90 backdrop-blur">
           <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <Link href="/" className="text-lg font-semibold tracking-tight text-brand-700">
@@ -60,7 +61,23 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             </nav>
           </div>
         </header>
-        {children}
+        <div>{children}</div>
+        <footer className="border-t border-slate-200 bg-white">
+          <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <p>© {currentYear} ServeConnect. All rights reserved.</p>
+            <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Link href="/privacy" className="hover:text-slate-900 hover:underline">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="hover:text-slate-900 hover:underline">
+                Terms of Service
+              </Link>
+              <Link href="/cookies" className="hover:text-slate-900 hover:underline">
+                Cookie Policy
+              </Link>
+            </nav>
+          </div>
+        </footer>
         <Analytics />
       </body>
     </html>

@@ -16,10 +16,16 @@ const DAYS = [
 type AvailabilityPickerProps = {
   prefix: string;
   title?: string;
+  description?: string;
   required?: boolean;
 };
 
-export function AvailabilityPicker({ prefix, title = "Availability", required = false }: AvailabilityPickerProps) {
+export function AvailabilityPicker({
+  prefix,
+  title = "Availability",
+  description = "Choose any days you are available, then set start and end times for each selected day.",
+  required = false
+}: AvailabilityPickerProps) {
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const selectedSet = useMemo(() => new Set(selectedDays), [selectedDays]);
 
@@ -34,7 +40,7 @@ export function AvailabilityPicker({ prefix, title = "Availability", required = 
   return (
     <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
       <legend className="px-1 text-sm font-semibold text-slate-900">{title}{required ? " *" : ""}</legend>
-      <p className="mb-3 text-xs text-slate-600">Choose any days you are available, then set start and end times for each selected day.</p>
+      <p className="mb-3 text-xs text-slate-600">{description}</p>
       <div className="grid gap-3">
         {DAYS.map((day) => {
           const checked = selectedSet.has(day.value);

@@ -95,7 +95,11 @@ export default async function OrgRegisterPage({ searchParams }: OrgRegisterProps
             <textarea name="opportunityDescription" rows={3} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
 
-          <AvailabilityPicker prefix="oppAvailability" />
+          <AvailabilityPicker
+            prefix="oppAvailability"
+            title="When You Need Volunteers"
+            description="Choose the days your program needs help, then set start and end times for each selected day."
+          />
           <label className="md:col-span-2 mt-[-0.25rem] flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" name="oneDayOpportunity" />
             This is a one-day opportunity (availability fit will not affect ranking).

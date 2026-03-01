@@ -162,7 +162,12 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
             <textarea name="description" required rows={3} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
 
-          <AvailabilityPicker prefix="availability" required />
+          <AvailabilityPicker
+            prefix="availability"
+            title="When You Need Volunteers"
+            description="Choose the days this opportunity needs support, then set start and end times for each selected day."
+            required
+          />
           <label className="md:col-span-2 mt-[-0.25rem] flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" name="oneDayOpportunity" />
             This is a one-day opportunity (availability fit will not affect ranking).
