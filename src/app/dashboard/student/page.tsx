@@ -127,6 +127,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
               <article key={req.id} className="rounded-lg border border-slate-200 p-4">
                 <p className="font-medium text-slate-900">{req.opportunity.title}</p>
                 <p className="mt-1 text-sm text-slate-700">Organization: {req.orgProfile.organization}</p>
+                <p className="mt-1 text-sm text-slate-700">Time needed: {req.opportunity.availability}</p>
+                <p className="mt-1 text-sm text-slate-700">Commitment: {req.opportunity.requiredCommitment}</p>
                 <p className="mt-1 text-sm text-slate-700">
                   Contact: {req.opportunity.contactEmail}
                   {req.opportunity.contactPhone ? ` | ${req.opportunity.contactPhone}` : ""}
@@ -178,6 +180,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
               <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Rank #{match.rank}</p>
               <h2 className="mt-1 text-lg font-semibold text-slate-900">{match.title}</h2>
               <p className="mt-1 text-sm text-slate-700">{match.organization}</p>
+              <p className="mt-2 text-sm text-slate-700">Time needed: {match.availability}</p>
+              <p className="mt-2 text-sm text-slate-700">Commitment: {match.requiredCommitment}</p>
               <p className="mt-2 text-sm text-slate-700">Distance: {match.distanceKm} km</p>
               <p className="mt-2 text-sm text-slate-700">Matched skills: {match.skillsMatched.join(", ") || "None"}</p>
               <p className="mt-2 text-sm text-slate-700">Missing required skills: {match.skillsMissing.join(", ") || "None"}</p>

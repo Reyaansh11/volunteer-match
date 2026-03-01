@@ -9,6 +9,8 @@ export type RankedOpportunity = {
   opportunityId: number;
   title: string;
   organization: string;
+  requiredCommitment: string;
+  availability: string;
   contactEmail: string;
   contactPhone: string | null;
   distanceKm: number;

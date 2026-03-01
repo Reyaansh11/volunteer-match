@@ -101,6 +101,8 @@ export function rankOpportunities(student: StudentWithSkills, opportunities: Opp
       opportunityId: opportunity.id,
       title: opportunity.title,
       organization: opportunity.orgProfile.organization,
+      requiredCommitment: opportunity.requiredCommitment,
+      availability: opportunity.availability,
       contactEmail: opportunity.contactEmail,
       contactPhone: opportunity.contactPhone,
       distanceKm: round(distanceKm),

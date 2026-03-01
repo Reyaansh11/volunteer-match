@@ -72,6 +72,8 @@ export default async function MatchesPage({ searchParams }: MatchPageProps) {
                 <span className="rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700">Rank #{match.rank}</span>
               </div>
               <p className="mt-1 text-sm text-slate-600">{match.organization}</p>
+              <p className="mt-2 text-sm text-slate-700">Time needed: {match.availability}</p>
+              <p className="mt-2 text-sm text-slate-700">Commitment: {match.requiredCommitment}</p>
               <p className="mt-2 text-sm text-slate-700">Distance: {match.distanceKm} km</p>
               <p className="mt-2 text-sm text-slate-700">Contact details are shown in dashboard after an accepted request.</p>
               <p className="mt-2 text-sm text-slate-700">Matched skills: {match.skillsMatched.join(", ") || "None"}</p>
