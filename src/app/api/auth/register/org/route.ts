@@ -43,6 +43,8 @@ export async function POST(request: Request) {
   const availability = buildAvailabilityFromForm(formData, "oppAvailability", "availability");
   const opportunitySkills = parseSkillsFromForm(formData, "opportunitySkills", "opportunitySkillsCustom");
   const oneDayOpportunity = formData.get("oneDayOpportunity") === "on";
+  const normalizedCommitment =
+    oneDayOpportunity && requiredCommitment ? "One-time event" : requiredCommitment;
 
   if (!email || !password || !organization || !zipCode || !contactName || !contactEmail) {
     return redirectWithError(request, "Please complete all required fields.");
@@ -86,15 +88,14 @@ export async function POST(request: Request) {
       return redirectWithError(request, "Could not create organization profile.");
     }
 
-    if (opportunityTitle && opportunityDescription && requiredCommitment && availability) {
+    if (opportunityTitle && opportunityDescription && normalizedCommitment && availability) {
       const opportunity = await prisma.opportunity.create({
         data: {
           orgProfileId: user.org.id,
           title: opportunityTitle,
           description: opportunityDescription,
-          requiredCommitment,
+          requiredCommitment: normalizedCommitment,
           availability,
-          isOneDay: oneDayOpportunity,
           contactEmail,
           contactPhone: contactPhone || null
         }

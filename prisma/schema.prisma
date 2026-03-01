@@ -101,7 +101,6 @@ model Opportunity {
   description        String
   requiredCommitment String
   availability       String
-  isOneDay           Boolean                @default(false)
   contactEmail       String
   contactPhone       String?
   radiusKm           Float                  @default(20)

@@ -163,7 +163,6 @@ async function main() {
       description: "Lead group storytelling and conversational sessions with residents.",
       requiredCommitment: "2 hours/week",
       availability: "Tue 16:00-18:00",
-      isOneDay: false,
       contactEmail: orgUser1.org.contactEmail,
       contactPhone: orgUser1.org.contactPhone,
       radiusKm: 15
@@ -177,7 +176,6 @@ async function main() {
       description: "Bring music, games, and uplifting entertainment to residents.",
       requiredCommitment: "One-time event",
       availability: "Sat 10:00-12:00",
-      isOneDay: true,
       contactEmail: orgUser2.org.contactEmail,
       contactPhone: orgUser2.org.contactPhone,
       radiusKm: 25

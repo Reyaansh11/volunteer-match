@@ -25,6 +25,11 @@ const WEIGHTS = {
   availability: 0.25
 };
 
+function isOneDayCommitment(requiredCommitment: string) {
+  const normalized = requiredCommitment.trim().toLowerCase();
+  return normalized.includes("one-time") || normalized.includes("one time") || normalized.includes("single-day");
+}
+
 function toRad(value: number) {
   return (value * Math.PI) / 180;
 }
@@ -88,7 +93,7 @@ export function rankOpportunities(student: StudentWithSkills, opportunities: Opp
 
     const availabilityScore = availabilityOverlap(student.availability, opportunity.availability);
 
-    const totalScore = opportunity.isOneDay
+    const totalScore = isOneDayCommitment(opportunity.requiredCommitment)
       ? distanceScore * 0.55 + skillScore * 0.45
       : distanceScore * WEIGHTS.distance + skillScore * WEIGHTS.skill + availabilityScore * WEIGHTS.availability;
 
@@ -133,7 +138,7 @@ export function rankStudentsForOpportunity(
     const matchedRequired = requiredSkills.filter((name) => studentSkills.has(name));
     const skillScore = requiredSkills.length ? matchedRequired.length / requiredSkills.length : 1;
     const availabilityScore = availabilityOverlap(student.availability, opportunity.availability);
-    const totalScore = opportunity.isOneDay
+    const totalScore = isOneDayCommitment(opportunity.requiredCommitment)
       ? distanceScore * 0.55 + skillScore * 0.45
       : distanceScore * WEIGHTS.distance + skillScore * WEIGHTS.skill + availabilityScore * WEIGHTS.availability;
 

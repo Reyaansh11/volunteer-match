@@ -19,11 +19,13 @@ export async function POST(request: Request) {
   const availability = buildAvailabilityFromForm(formData, "availability", "availability");
   const radiusKm = Number(formData.get("radiusKm") || 20);
   const oneDayOpportunity = formData.get("oneDayOpportunity") === "on";
+  const normalizedCommitment =
+    oneDayOpportunity && requiredCommitment ? "One-time event" : requiredCommitment;
   const contactEmail = String(formData.get("contactEmail") || user.org.contactEmail).trim().toLowerCase();
   const contactPhone = String(formData.get("contactPhone") || user.org.contactPhone || "").trim();
   const skills = parseSkillsFromForm(formData, "skills", "skillsCustom");
 
-  if (!title || !description || !requiredCommitment || !availability || !contactEmail) {
+  if (!title || !description || !normalizedCommitment || !availability || !contactEmail) {
     return NextResponse.redirect(new URL("/dashboard/org?error=Missing+required+fields", request.url), 303);
   }
 
@@ -32,9 +34,8 @@ export async function POST(request: Request) {
       orgProfileId: user.org.id,
       title,
       description,
-      requiredCommitment,
+      requiredCommitment: normalizedCommitment,
       availability,
-      isOneDay: oneDayOpportunity,
       radiusKm: Number.isFinite(radiusKm) ? radiusKm : 20,
       contactEmail,
       contactPhone: contactPhone || null
