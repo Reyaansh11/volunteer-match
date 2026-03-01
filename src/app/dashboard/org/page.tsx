@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { COMMITMENT_OPTIONS, DAY_OPTIONS, SKILL_OPTIONS, TIME_OPTIONS } from "@/lib/form-options";
+import { AvailabilityPicker } from "@/components/availability-picker";
+import { COMMITMENT_OPTIONS, SKILL_OPTIONS } from "@/lib/form-options";
 import { rankStudentsForOpportunity } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
@@ -161,74 +162,11 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
             <textarea name="description" required rows={3} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
 
-          <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
-            <legend className="px-1 text-sm font-semibold text-slate-900">Availability *</legend>
-            <p className="mb-3 text-xs text-slate-600">Choose one or two time windows, and all days where help is needed.</p>
-            <div className="grid gap-3 md:grid-cols-2">
-              <fieldset className="rounded-md border border-slate-200 p-3">
-                <legend className="px-1 text-xs font-semibold text-slate-700">Days (Slot 1)</legend>
-                <div className="mt-2 grid grid-cols-4 gap-2">
-                  {DAY_OPTIONS.map((day) => (
-                    <label key={day} className="flex items-center gap-1 text-xs text-slate-700">
-                      <input type="checkbox" name="availabilityDays1" value={day} />
-                      {day}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              <label className="text-sm font-medium text-slate-700">
-                Start (Slot 1)
-                <select name="availabilityStart1" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
-                  <option value="">Select time</option>
-                  {TIME_OPTIONS.map((time) => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-sm font-medium text-slate-700">
-                End (Slot 1)
-                <select name="availabilityEnd1" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
-                  <option value="">Select time</option>
-                  {TIME_OPTIONS.map((time) => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-              </label>
-              <fieldset className="rounded-md border border-slate-200 p-3">
-                <legend className="px-1 text-xs font-semibold text-slate-700">Days (Slot 2)</legend>
-                <div className="mt-2 grid grid-cols-4 gap-2">
-                  {DAY_OPTIONS.map((day) => (
-                    <label key={day} className="flex items-center gap-1 text-xs text-slate-700">
-                      <input type="checkbox" name="availabilityDays2" value={day} />
-                      {day}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              <label className="text-sm font-medium text-slate-700">
-                Start (Slot 2)
-                <select name="availabilityStart2" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
-                  <option value="">Select time</option>
-                  {TIME_OPTIONS.map((time) => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-sm font-medium text-slate-700">
-                End (Slot 2)
-                <select name="availabilityEnd2" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
-                  <option value="">Select time</option>
-                  {TIME_OPTIONS.map((time) => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <label className="mt-3 flex items-center gap-2 text-sm text-slate-700">
-              <input type="checkbox" name="oneDayOpportunity" />
-              This is a one-day opportunity (availability fit will not affect ranking).
-            </label>
-          </fieldset>
+          <AvailabilityPicker prefix="availability" required />
+          <label className="md:col-span-2 mt-[-0.25rem] flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" name="oneDayOpportunity" />
+            This is a one-day opportunity (availability fit will not affect ranking).
+          </label>
 
           <label className="text-sm font-medium text-slate-700">
             Radius (km)

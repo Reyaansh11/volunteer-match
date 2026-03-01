@@ -207,9 +207,29 @@ function parseAvailabilitySlot(formData: FormData, prefix: string, slotNumber: n
   return days.map((day) => `${day} ${start}-${end}`);
 }
 
+function parseAvailabilityByDay(formData: FormData, prefix: string) {
+  const days = formData
+    .getAll(`${prefix}Days`)
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+
+  const availability: string[] = [];
+  for (const day of days) {
+    const start = String(formData.get(`${prefix}Start_${day}`) || "").trim();
+    const end = String(formData.get(`${prefix}End_${day}`) || "").trim();
+    if (!start || !end || start >= end) {
+      continue;
+    }
+    availability.push(`${day} ${start}-${end}`);
+  }
+
+  return availability;
+}
+
 export function buildAvailabilityFromForm(formData: FormData, prefix: string, fallbackFieldName?: string) {
-  const slots = [...parseAvailabilitySlot(formData, prefix, 1), ...parseAvailabilitySlot(formData, prefix, 2)];
-  const deduped = Array.from(new Set(slots));
+  const byDay = parseAvailabilityByDay(formData, prefix);
+  const bySlot = [...parseAvailabilitySlot(formData, prefix, 1), ...parseAvailabilitySlot(formData, prefix, 2)];
+  const deduped = Array.from(new Set([...byDay, ...bySlot]));
   if (deduped.length > 0) {
     return deduped.join("; ");
   }
