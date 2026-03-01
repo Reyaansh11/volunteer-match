@@ -88,8 +88,9 @@ export function rankOpportunities(student: StudentWithSkills, opportunities: Opp
 
     const availabilityScore = availabilityOverlap(student.availability, opportunity.availability);
 
-    const totalScore =
-      distanceScore * WEIGHTS.distance + skillScore * WEIGHTS.skill + availabilityScore * WEIGHTS.availability;
+    const totalScore = opportunity.isOneDay
+      ? distanceScore * 0.55 + skillScore * 0.45
+      : distanceScore * WEIGHTS.distance + skillScore * WEIGHTS.skill + availabilityScore * WEIGHTS.availability;
 
     return {
       opportunityId: opportunity.id,
@@ -132,8 +133,9 @@ export function rankStudentsForOpportunity(
     const matchedRequired = requiredSkills.filter((name) => studentSkills.has(name));
     const skillScore = requiredSkills.length ? matchedRequired.length / requiredSkills.length : 1;
     const availabilityScore = availabilityOverlap(student.availability, opportunity.availability);
-    const totalScore =
-      distanceScore * WEIGHTS.distance + skillScore * WEIGHTS.skill + availabilityScore * WEIGHTS.availability;
+    const totalScore = opportunity.isOneDay
+      ? distanceScore * 0.55 + skillScore * 0.45
+      : distanceScore * WEIGHTS.distance + skillScore * WEIGHTS.skill + availabilityScore * WEIGHTS.availability;
 
     return {
       studentId: student.id,

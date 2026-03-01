@@ -21,11 +21,8 @@ export default async function Home() {
           A community-first platform for students and local organizations to find each other, confirm real fit, and track verified service hours.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
-          <Link href="/register/student" className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
-            Student Sign Up
-          </Link>
-          <Link href="/register/org" className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
-            Program Sign Up
+          <Link href="/register" className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
+            Sign Up
           </Link>
           <Link href="/login" className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100">
             Log In

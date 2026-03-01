@@ -18,6 +18,7 @@ export async function POST(request: Request) {
   const requiredCommitment = resolveCommitmentFromForm(formData, "requiredCommitmentPreset", "requiredCommitmentCustom", "requiredCommitment");
   const availability = buildAvailabilityFromForm(formData, "availability", "availability");
   const radiusKm = Number(formData.get("radiusKm") || 20);
+  const oneDayOpportunity = formData.get("oneDayOpportunity") === "on";
   const contactEmail = String(formData.get("contactEmail") || user.org.contactEmail).trim().toLowerCase();
   const contactPhone = String(formData.get("contactPhone") || user.org.contactPhone || "").trim();
   const skills = parseSkillsFromForm(formData, "skills", "skillsCustom");
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
       description,
       requiredCommitment,
       availability,
+      isOneDay: oneDayOpportunity,
       radiusKm: Number.isFinite(radiusKm) ? radiusKm : 20,
       contactEmail,
       contactPhone: contactPhone || null

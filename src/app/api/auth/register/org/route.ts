@@ -42,6 +42,7 @@ export async function POST(request: Request) {
   const requiredCommitment = resolveCommitmentFromForm(formData, "requiredCommitmentPreset", "requiredCommitmentCustom", "requiredCommitment");
   const availability = buildAvailabilityFromForm(formData, "oppAvailability", "availability");
   const opportunitySkills = parseSkillsFromForm(formData, "opportunitySkills", "opportunitySkillsCustom");
+  const oneDayOpportunity = formData.get("oneDayOpportunity") === "on";
 
   if (!email || !password || !organization || !zipCode || !contactName || !contactEmail) {
     return redirectWithError(request, "Please complete all required fields.");
@@ -93,6 +94,7 @@ export async function POST(request: Request) {
           description: opportunityDescription,
           requiredCommitment,
           availability,
+          isOneDay: oneDayOpportunity,
           contactEmail,
           contactPhone: contactPhone || null
         }

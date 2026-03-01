@@ -10,7 +10,18 @@ export const SKILL_OPTIONS = [
   "language support",
   "tutoring",
   "event planning",
-  "companionship"
+  "companionship",
+  "pet management",
+  "animal care",
+  "food boxing",
+  "meal packing",
+  "boxing",
+  "sorting donations",
+  "warehouse support",
+  "clean-up",
+  "transport support",
+  "gardening",
+  "fundraising"
 ] as const;
 
 export const COMMITMENT_OPTIONS = [

@@ -14,8 +14,9 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16",
     "@prisma/client": "^6.4.1",
+    "@vercel/analytics": "^1.6.1",
+    "adm-zip": "^0.5.16",
     "bcryptjs": "^2.4.3",
     "next": "15.5.7",
     "react": "19.2.1",

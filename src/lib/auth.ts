@@ -183,24 +183,28 @@ export function resolveCommitmentFromForm(
 }
 
 function parseAvailabilitySlot(formData: FormData, prefix: string, slotNumber: number) {
-  const day = String(formData.get(`${prefix}Day${slotNumber}`) || "").trim();
+  const days = formData
+    .getAll(`${prefix}Days${slotNumber}`)
+    .map((value) => String(value).trim())
+    .filter(Boolean);
   const start = String(formData.get(`${prefix}Start${slotNumber}`) || "").trim();
   const end = String(formData.get(`${prefix}End${slotNumber}`) || "").trim();
 
-  if (!day || !start || !end) {
-    return "";
+  if (!days.length || !start || !end) {
+    return [];
   }
   if (start >= end) {
-    return "";
+    return [];
   }
 
-  return `${day} ${start}-${end}`;
+  return days.map((day) => `${day} ${start}-${end}`);
 }
 
 export function buildAvailabilityFromForm(formData: FormData, prefix: string, fallbackFieldName?: string) {
-  const slots = [parseAvailabilitySlot(formData, prefix, 1), parseAvailabilitySlot(formData, prefix, 2)].filter(Boolean);
-  if (slots.length > 0) {
-    return slots.join("; ");
+  const slots = [...parseAvailabilitySlot(formData, prefix, 1), ...parseAvailabilitySlot(formData, prefix, 2)];
+  const deduped = Array.from(new Set(slots));
+  if (deduped.length > 0) {
+    return deduped.join("; ");
   }
 
   if (fallbackFieldName) {
