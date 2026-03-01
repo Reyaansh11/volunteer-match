@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { Prisma, UserRole } from "@prisma/client";
 import {
+  buildAvailabilityFromForm,
   createSession,
   estimateLatLngFromZip,
   getSessionCookieOptions,
   hashPassword,
-  parseSkills,
+  parseSkillsFromForm,
   requireSameOrigin,
   SESSION_COOKIE
 } from "@/lib/auth";
@@ -29,16 +30,16 @@ export async function POST(request: Request) {
   const zipCode = String(formData.get("zipCode") || "").trim();
   const city = String(formData.get("city") || "").trim();
   const state = String(formData.get("state") || "").trim();
-  const availability = String(formData.get("availability") || "").trim();
+  const availability = buildAvailabilityFromForm(formData, "availability", "availability");
   const personalStatement = String(formData.get("personalStatement") || "").trim();
   const letterOfRecUrl = String(formData.get("letterOfRecUrl") || "").trim();
   const programAffiliation = String(formData.get("programAffiliation") || "").trim();
   const maxDistanceKm = Number(formData.get("maxDistanceKm") || 25);
   const phone = String(formData.get("phone") || "").trim();
-  const skillsInput = String(formData.get("skills") || "").trim();
+  const parsedSkills = parseSkillsFromForm(formData, "skills", "skillsCustom");
   const parentConsent = formData.get("parentConsent") === "on";
 
-  if (!email || !password || !fullName || !zipCode || !availability || !skillsInput) {
+  if (!email || !password || !fullName || !zipCode || !availability || parsedSkills.length === 0) {
     return redirectWithError(request, "Please complete all required fields.");
   }
   if (password.length < 8) {
@@ -46,8 +47,6 @@ export async function POST(request: Request) {
   }
 
   const latLng = estimateLatLngFromZip(zipCode);
-  const parsedSkills = parseSkills(skillsInput);
-
   try {
     const user = await prisma.user.create({
       data: {

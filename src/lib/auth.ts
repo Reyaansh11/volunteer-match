@@ -97,17 +97,32 @@ export function getSessionCookieOptions(expiresAt: Date) {
 
 export function requireSameOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
+  const referer = request.headers.get("referer");
   const host = request.headers.get("host");
-  if (!origin || !host) {
+  if (!host) {
     return false;
   }
 
-  try {
-    const originUrl = new URL(origin);
-    return originUrl.host === host;
-  } catch {
-    return false;
+  if (origin) {
+    try {
+      const originUrl = new URL(origin);
+      return originUrl.host === host;
+    } catch {
+      return false;
+    }
   }
+
+  if (referer) {
+    try {
+      const refererUrl = new URL(referer);
+      return refererUrl.host === host;
+    } catch {
+      return false;
+    }
+  }
+
+  // Some clients omit both headers for same-site form posts.
+  return process.env.NODE_ENV !== "production";
 }
 
 export function estimateLatLngFromZip(zipCode: string) {
@@ -126,7 +141,71 @@ export function parseSkills(input: string) {
       input
         .split(",")
         .map((s) => s.trim().toLowerCase())
-        .filter(Boolean)
+      .filter(Boolean)
     )
   );
+}
+
+export function parseSkillsFromForm(formData: FormData, fieldName: string, customFieldName: string) {
+  const selected = formData
+    .getAll(fieldName)
+    .map((value) => String(value).trim().toLowerCase())
+    .filter(Boolean);
+  const custom = String(formData.get(customFieldName) || "").trim().toLowerCase();
+  const merged = [...selected, ...parseSkills(custom)];
+  return Array.from(new Set(merged));
+}
+
+export function resolveCommitmentFromForm(
+  formData: FormData,
+  presetFieldName: string,
+  customFieldName: string,
+  fallbackFieldName?: string
+) {
+  const preset = String(formData.get(presetFieldName) || "").trim();
+  if (preset && preset !== "custom") {
+    return preset;
+  }
+
+  const custom = String(formData.get(customFieldName) || "").trim();
+  if (custom) {
+    return custom;
+  }
+
+  if (fallbackFieldName) {
+    const fallback = String(formData.get(fallbackFieldName) || "").trim();
+    if (fallback) {
+      return fallback;
+    }
+  }
+
+  return "";
+}
+
+function parseAvailabilitySlot(formData: FormData, prefix: string, slotNumber: number) {
+  const day = String(formData.get(`${prefix}Day${slotNumber}`) || "").trim();
+  const start = String(formData.get(`${prefix}Start${slotNumber}`) || "").trim();
+  const end = String(formData.get(`${prefix}End${slotNumber}`) || "").trim();
+
+  if (!day || !start || !end) {
+    return "";
+  }
+  if (start >= end) {
+    return "";
+  }
+
+  return `${day} ${start}-${end}`;
+}
+
+export function buildAvailabilityFromForm(formData: FormData, prefix: string, fallbackFieldName?: string) {
+  const slots = [parseAvailabilitySlot(formData, prefix, 1), parseAvailabilitySlot(formData, prefix, 2)].filter(Boolean);
+  if (slots.length > 0) {
+    return slots.join("; ");
+  }
+
+  if (fallbackFieldName) {
+    return String(formData.get(fallbackFieldName) || "").trim();
+  }
+
+  return "";
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DAY_OPTIONS, SKILL_OPTIONS, TIME_OPTIONS } from "@/lib/form-options";
 
 type StudentRegisterProps = {
   searchParams: Promise<{ error?: string }>;
@@ -48,18 +49,89 @@ export default async function StudentRegisterPage({ searchParams }: StudentRegis
             Phone
             <input name="phone" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
-          <label className="text-sm font-medium text-slate-700">
-            Skills * (comma-separated)
-            <input name="skills" required placeholder="public speaking, entertainer, music" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-          </label>
+
+          <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-semibold text-slate-900">Skills You Can Offer *</legend>
+            <div className="mt-2 grid gap-2 md:grid-cols-3">
+              {SKILL_OPTIONS.map((skill) => (
+                <label key={skill} className="flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" name="skills" value={skill} />
+                  <span className="capitalize">{skill}</span>
+                </label>
+              ))}
+            </div>
+            <label className="mt-3 block text-sm font-medium text-slate-700">
+              Add custom skills (optional, comma-separated)
+              <input name="skillsCustom" placeholder="poetry, sign language" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+            </label>
+          </fieldset>
+
+          <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-semibold text-slate-900">Availability *</legend>
+            <p className="mb-3 text-xs text-slate-600">Choose one or two weekly time windows.</p>
+            <div className="grid gap-3 md:grid-cols-3">
+              <label className="text-sm font-medium text-slate-700">
+                Day (Slot 1)
+                <select name="availabilityDay1" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select day</option>
+                  {DAY_OPTIONS.map((day) => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                Start (Slot 1)
+                <select name="availabilityStart1" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select time</option>
+                  {TIME_OPTIONS.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                End (Slot 1)
+                <select name="availabilityEnd1" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select time</option>
+                  {TIME_OPTIONS.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                Day (Slot 2, optional)
+                <select name="availabilityDay2" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select day</option>
+                  {DAY_OPTIONS.map((day) => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                Start (Slot 2)
+                <select name="availabilityStart2" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select time</option>
+                  {TIME_OPTIONS.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                End (Slot 2)
+                <select name="availabilityEnd2" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select time</option>
+                  {TIME_OPTIONS.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
           <label className="text-sm font-medium text-slate-700">
             Max Travel Distance (km)
             <input name="maxDistanceKm" type="number" defaultValue={25} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
-          <label className="md:col-span-2 text-sm font-medium text-slate-700">
-            Availability *
-            <input name="availability" required placeholder="Tue 16:00-18:00; Sat 10:00-12:00" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-          </label>
+
           <label className="md:col-span-2 text-sm font-medium text-slate-700">
             Personal Statement
             <textarea name="personalStatement" rows={4} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />

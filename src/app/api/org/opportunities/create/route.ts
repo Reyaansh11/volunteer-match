@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, parseSkills, requireSameOrigin } from "@/lib/auth";
+import { buildAvailabilityFromForm, getCurrentUser, parseSkillsFromForm, requireSameOrigin, resolveCommitmentFromForm } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -15,12 +15,12 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
-  const requiredCommitment = String(formData.get("requiredCommitment") || "").trim();
-  const availability = String(formData.get("availability") || "").trim();
+  const requiredCommitment = resolveCommitmentFromForm(formData, "requiredCommitmentPreset", "requiredCommitmentCustom", "requiredCommitment");
+  const availability = buildAvailabilityFromForm(formData, "availability", "availability");
   const radiusKm = Number(formData.get("radiusKm") || 20);
   const contactEmail = String(formData.get("contactEmail") || user.org.contactEmail).trim().toLowerCase();
   const contactPhone = String(formData.get("contactPhone") || user.org.contactPhone || "").trim();
-  const skills = parseSkills(String(formData.get("skills") || ""));
+  const skills = parseSkillsFromForm(formData, "skills", "skillsCustom");
 
   if (!title || !description || !requiredCommitment || !availability || !contactEmail) {
     return NextResponse.redirect(new URL("/dashboard/org?error=Missing+required+fields", request.url), 303);

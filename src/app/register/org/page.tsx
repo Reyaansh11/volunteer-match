@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { COMMITMENT_OPTIONS, DAY_OPTIONS, SKILL_OPTIONS, TIME_OPTIONS } from "@/lib/form-options";
 
 type OrgRegisterProps = {
   searchParams: Promise<{ error?: string }>;
@@ -76,20 +77,99 @@ export default async function OrgRegisterPage({ searchParams }: OrgRegisterProps
           </label>
           <label className="text-sm font-medium text-slate-700">
             Required Commitment
-            <input name="requiredCommitment" placeholder="2 hours/week" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+            <select name="requiredCommitmentPreset" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+              <option value="">Select commitment</option>
+              {COMMITMENT_OPTIONS.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label className="md:col-span-2 text-sm font-medium text-slate-700">
+            Custom Commitment (optional)
+            <input name="requiredCommitmentCustom" placeholder="e.g., 90 minutes/week" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
           <label className="md:col-span-2 text-sm font-medium text-slate-700">
             Opportunity Description
             <textarea name="opportunityDescription" rows={3} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
-          <label className="text-sm font-medium text-slate-700">
-            Availability
-            <input name="availability" placeholder="Tue 16:00-18:00" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-          </label>
-          <label className="text-sm font-medium text-slate-700">
-            Skills Needed (comma-separated)
-            <input name="opportunitySkills" placeholder="conversation, public speaking" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-          </label>
+
+          <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-semibold text-slate-900">Availability</legend>
+            <p className="mb-3 text-xs text-slate-600">Choose one or two recurring windows.</p>
+            <div className="grid gap-3 md:grid-cols-3">
+              <label className="text-sm font-medium text-slate-700">
+                Day (Slot 1)
+                <select name="oppAvailabilityDay1" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select day</option>
+                  {DAY_OPTIONS.map((day) => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                Start (Slot 1)
+                <select name="oppAvailabilityStart1" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select time</option>
+                  {TIME_OPTIONS.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                End (Slot 1)
+                <select name="oppAvailabilityEnd1" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select time</option>
+                  {TIME_OPTIONS.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                Day (Slot 2)
+                <select name="oppAvailabilityDay2" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select day</option>
+                  {DAY_OPTIONS.map((day) => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                Start (Slot 2)
+                <select name="oppAvailabilityStart2" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select time</option>
+                  {TIME_OPTIONS.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                End (Slot 2)
+                <select name="oppAvailabilityEnd2" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  <option value="">Select time</option>
+                  {TIME_OPTIONS.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-semibold text-slate-900">Skills Needed</legend>
+            <div className="mt-2 grid gap-2 md:grid-cols-3">
+              {SKILL_OPTIONS.map((skill) => (
+                <label key={skill} className="flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" name="opportunitySkills" value={skill} />
+                  <span className="capitalize">{skill}</span>
+                </label>
+              ))}
+            </div>
+            <label className="mt-3 block text-sm font-medium text-slate-700">
+              Add custom skills (optional, comma-separated)
+              <input name="opportunitySkillsCustom" placeholder="wheelchair support, bingo hosting" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+            </label>
+          </fieldset>
 
           <button type="submit" className="md:col-span-2 rounded-md bg-brand-700 px-4 py-2 font-medium text-white hover:bg-brand-500">
             Create Program Account

@@ -14,7 +14,7 @@ export default async function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-14">
       <section className="relative overflow-hidden rounded-3xl border border-brand-700/20 bg-white/90 p-10 shadow-sm">
-        <div className="pointer-events-none absolute -right-14 -top-12 h-44 w-44 rounded-full bg-brand-50" />
+        <div className="pointer-events-none absolute right-2 top-2 h-20 w-20 rounded-full bg-brand-50/90 md:-right-14 md:-top-12 md:h-44 md:w-44" />
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-500">Students Serving, Communities Growing</p>
         <h1 className="mt-4 max-w-3xl text-5xl font-semibold tracking-tight text-slate-900">ServeConnect</h1>
         <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-700">

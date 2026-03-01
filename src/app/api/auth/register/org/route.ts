@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { Prisma, UserRole } from "@prisma/client";
 import {
+  buildAvailabilityFromForm,
   createSession,
   estimateLatLngFromZip,
   getSessionCookieOptions,
   hashPassword,
-  parseSkills,
+  parseSkillsFromForm,
+  resolveCommitmentFromForm,
   requireSameOrigin,
   SESSION_COOKIE
 } from "@/lib/auth";
@@ -37,9 +39,9 @@ export async function POST(request: Request) {
   const volunteerNotes = String(formData.get("volunteerNotes") || "").trim();
   const opportunityTitle = String(formData.get("opportunityTitle") || "").trim();
   const opportunityDescription = String(formData.get("opportunityDescription") || "").trim();
-  const requiredCommitment = String(formData.get("requiredCommitment") || "").trim();
-  const availability = String(formData.get("availability") || "").trim();
-  const opportunitySkillsInput = String(formData.get("opportunitySkills") || "").trim();
+  const requiredCommitment = resolveCommitmentFromForm(formData, "requiredCommitmentPreset", "requiredCommitmentCustom", "requiredCommitment");
+  const availability = buildAvailabilityFromForm(formData, "oppAvailability", "availability");
+  const opportunitySkills = parseSkillsFromForm(formData, "opportunitySkills", "opportunitySkillsCustom");
 
   if (!email || !password || !organization || !zipCode || !contactName || !contactEmail) {
     return redirectWithError(request, "Please complete all required fields.");
@@ -96,7 +98,7 @@ export async function POST(request: Request) {
         }
       });
 
-      for (const skillName of parseSkills(opportunitySkillsInput)) {
+      for (const skillName of opportunitySkills) {
         const skill = await prisma.skill.upsert({
           where: { name: skillName },
           update: {},
