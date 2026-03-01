@@ -4,6 +4,7 @@ import {
   OrgProfile,
   Skill,
   StudentProfile,
+  StudentReview,
   StudentSkill,
   User
 } from "@prisma/client";
@@ -16,13 +17,21 @@ type OpportunityWithDetails = Opportunity & {
 };
 type StudentCandidate = StudentProfile & {
   skills: (StudentSkill & { skill: Skill })[];
+  reviewsReceived: Pick<StudentReview, "rating">[];
   user: Pick<User, "email">;
 };
 
-const WEIGHTS = {
+const STUDENT_TO_OPPORTUNITY_WEIGHTS = {
   distance: 0.4,
   skill: 0.35,
   availability: 0.25
+};
+
+const ORG_TO_STUDENT_WEIGHTS = {
+  availability: 0.35,
+  distance: 0.2,
+  skill: 0.25,
+  rating: 0.2
 };
 
 function isOneDayCommitment(requiredCommitment: string) {
@@ -95,7 +104,9 @@ export function rankOpportunities(student: StudentWithSkills, opportunities: Opp
 
     const totalScore = isOneDayCommitment(opportunity.requiredCommitment)
       ? distanceScore * 0.55 + skillScore * 0.45
-      : distanceScore * WEIGHTS.distance + skillScore * WEIGHTS.skill + availabilityScore * WEIGHTS.availability;
+      : distanceScore * STUDENT_TO_OPPORTUNITY_WEIGHTS.distance +
+          skillScore * STUDENT_TO_OPPORTUNITY_WEIGHTS.skill +
+          availabilityScore * STUDENT_TO_OPPORTUNITY_WEIGHTS.availability;
 
     return {
       opportunityId: opportunity.id,
@@ -140,9 +151,17 @@ export function rankStudentsForOpportunity(
     const matchedRequired = requiredSkills.filter((name) => studentSkills.has(name));
     const skillScore = requiredSkills.length ? matchedRequired.length / requiredSkills.length : 1;
     const availabilityScore = availabilityOverlap(student.availability, opportunity.availability);
+    const ratingTotal = student.reviewsReceived.reduce((sum, review) => sum + review.rating, 0);
+    const averageRating = student.reviewsReceived.length ? ratingTotal / student.reviewsReceived.length : null;
+    const ratingScore = averageRating ? Math.min(Math.max(averageRating, 0), 5) / 5 : 0.5;
     const totalScore = isOneDayCommitment(opportunity.requiredCommitment)
-      ? distanceScore * 0.55 + skillScore * 0.45
-      : distanceScore * WEIGHTS.distance + skillScore * WEIGHTS.skill + availabilityScore * WEIGHTS.availability;
+      ? distanceScore * (ORG_TO_STUDENT_WEIGHTS.distance / 0.65) +
+          skillScore * (ORG_TO_STUDENT_WEIGHTS.skill / 0.65) +
+          ratingScore * (ORG_TO_STUDENT_WEIGHTS.rating / 0.65)
+      : availabilityScore * ORG_TO_STUDENT_WEIGHTS.availability +
+          distanceScore * ORG_TO_STUDENT_WEIGHTS.distance +
+          skillScore * ORG_TO_STUDENT_WEIGHTS.skill +
+          ratingScore * ORG_TO_STUDENT_WEIGHTS.rating;
 
     return {
       studentId: student.id,
@@ -152,6 +171,8 @@ export function rankStudentsForOpportunity(
       programAffiliation: student.programAffiliation,
       personalStatement: student.personalStatement,
       letterOfRecUrl: student.letterOfRecUrl,
+      averageRating: averageRating ? round(averageRating) : null,
+      reviewCount: student.reviewsReceived.length,
       rank: 0,
       distanceKm: round(distanceKm),
       availability: student.availability,
@@ -171,6 +192,8 @@ export function rankStudentsForOpportunity(
       programAffiliation: item.programAffiliation,
       personalStatement: item.personalStatement,
       letterOfRecUrl: item.letterOfRecUrl,
+      averageRating: item.averageRating,
+      reviewCount: item.reviewCount,
       rank: index + 1,
       distanceKm: item.distanceKm,
       availability: item.availability,

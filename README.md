@@ -83,6 +83,7 @@ npm run dev
 2. Create a Neon Postgres database.
 3. In Vercel, import repo and set environment variable:
    - `DATABASE_URL` (Neon connection string)
+   - Optional `RESEND_API_KEY` + `RESEND_FROM_EMAIL` for match-request emails
    - Optional `NHS_TEMPLATE_PATH` (if not using bundled template)
 4. Deploy once.
 5. Run production migrations:

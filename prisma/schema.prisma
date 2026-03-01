@@ -67,6 +67,7 @@ model StudentProfile {
   applications       Application[]
   matches            Match[]              @relation("StudentMatches")
   matchRequests      MatchRequest[]
+  reviewsReceived    StudentReview[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 }
@@ -90,6 +91,7 @@ model OrgProfile {
   user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   opportunities  Opportunity[]
   matchRequests  MatchRequest[]
+  submittedReviews StudentReview[]
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
 }
@@ -178,6 +180,21 @@ model MatchRequest {
   orgProfile      OrgProfile         @relation(fields: [orgProfileId], references: [id], onDelete: Cascade)
   opportunity     Opportunity        @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
   serviceHourForm ServiceHourForm?
+  studentReview   StudentReview?
+}
+
+model StudentReview {
+  id            Int            @id @default(autoincrement())
+  matchRequestId Int           @unique
+  studentId     Int
+  orgProfileId  Int
+  rating        Int
+  feedback      String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  matchRequest  MatchRequest   @relation(fields: [matchRequestId], references: [id], onDelete: Cascade)
+  student       StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  orgProfile    OrgProfile     @relation(fields: [orgProfileId], references: [id], onDelete: Cascade)
 }
 
 model ServiceHourForm {

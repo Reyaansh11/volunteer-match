@@ -1,6 +1,7 @@
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentUser, requireSameOrigin } from "@/lib/auth";
+import { sendMatchRequestEmail } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithNotice(request: Request, redirectTo: string, key: "error" | "success", value: string) {
@@ -58,7 +59,16 @@ export async function POST(request: Request) {
     return redirectWithNotice(request, redirectTo, "error", "Invalid student");
   }
 
-  const student = await prisma.studentProfile.findUnique({ where: { id: studentId } });
+  const student = await prisma.studentProfile.findUnique({
+    where: { id: studentId },
+    include: {
+      user: {
+        select: {
+          email: true
+        }
+      }
+    }
+  });
   if (!student) {
     return redirectWithNotice(request, redirectTo, "error", "Student not found");
   }
@@ -87,6 +97,20 @@ export async function POST(request: Request) {
       message: message || null
     }
   });
+
+  if (initiatedBy === RequestInitiator.STUDENT) {
+    await sendMatchRequestEmail({
+      to: opportunity.orgProfile.contactEmail,
+      subject: `New match request from ${student.fullName}`,
+      text: `Student ${student.fullName} requested a match for "${opportunity.title}".${message ? ` Message: ${message}` : ""}`
+    });
+  } else {
+    await sendMatchRequestEmail({
+      to: student.user.email,
+      subject: `${opportunity.orgProfile.organization} sent you a match request`,
+      text: `${opportunity.orgProfile.organization} requested a match with you for "${opportunity.title}".${message ? ` Message: ${message}` : ""}`
+    });
+  }
 
   return redirectWithNotice(request, redirectTo, "success", "Request sent");
 }

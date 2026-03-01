@@ -57,6 +57,11 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
           email: true
         }
       },
+      reviewsReceived: {
+        select: {
+          rating: true
+        }
+      },
       skills: {
         include: {
           skill: true
@@ -78,7 +83,8 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         }
       },
       opportunity: true,
-      serviceHourForm: true
+      serviceHourForm: true,
+      studentReview: true
     },
     orderBy: {
       createdAt: "desc"
@@ -98,6 +104,59 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         <p className="mt-2 text-sm text-slate-700">{org.description || "Add organization details in your profile as needed."}</p>
         {params.error ? <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{params.error}</p> : null}
         {params.success ? <p className="mt-3 rounded-md bg-green-50 p-2 text-sm text-green-700">{params.success}</p> : null}
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900">Edit Program Profile</h2>
+        <form action="/api/profile/org/update" method="post" className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="text-sm font-medium text-slate-700">
+            Organization Name *
+            <input name="organization" defaultValue={org.organization} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Category
+            <input name="category" defaultValue={org.category} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            ZIP Code *
+            <input name="zipCode" defaultValue={org.zipCode} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            City
+            <input name="city" defaultValue={org.city || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            State
+            <input name="state" defaultValue={org.state || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Contact Name *
+            <input name="contactName" defaultValue={org.contactName} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Contact Email *
+            <input name="contactEmail" type="email" defaultValue={org.contactEmail} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Contact Phone
+            <input name="contactPhone" defaultValue={org.contactPhone || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Website URL
+            <input name="websiteUrl" type="url" defaultValue={org.websiteUrl || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="md:col-span-2 text-sm font-medium text-slate-700">
+            About Your Program
+            <textarea name="description" rows={3} defaultValue={org.description || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="md:col-span-2 text-sm font-medium text-slate-700">
+            Volunteer Notes
+            <textarea name="volunteerNotes" rows={3} defaultValue={org.volunteerNotes || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <button type="submit" className="md:col-span-2 w-fit rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
+            Save Program Changes
+          </button>
+        </form>
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -254,6 +313,9 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                 <p className="mt-1 text-sm text-slate-700">Distance: {student.distanceKm} km</p>
                 <p className="mt-1 text-sm text-slate-700">Availability: {student.availability}</p>
                 <p className="mt-1 text-sm text-slate-700">Matched skills: {student.skillsMatched.join(", ") || "None"}</p>
+                <p className="mt-1 text-sm text-slate-700">
+                  Average review: {student.averageRating ? `${student.averageRating}/5` : "No reviews yet"} ({student.reviewCount} total)
+                </p>
 
                 {status ? <p className="mt-2 text-sm text-slate-700">Request status: {status}</p> : null}
 
@@ -289,6 +351,36 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                 <p className="font-medium text-slate-900">{req.opportunity.title}</p>
                 <p className="mt-1 text-sm text-slate-700">Student: {req.student.fullName} ({req.student.user.email})</p>
                 <p className="mt-1 text-sm text-slate-700">Request message: {req.message || "No message"}</p>
+
+                {req.studentReview ? (
+                  <p className="mt-2 text-sm text-slate-700">
+                    Your review: {req.studentReview.rating}/5
+                    {req.studentReview.feedback ? ` - ${req.studentReview.feedback}` : ""}
+                  </p>
+                ) : (
+                  <form action="/api/reviews/create" method="post" className="mt-3 grid gap-2 rounded-md border border-slate-200 p-3">
+                    <input type="hidden" name="matchRequestId" value={req.id} />
+                    <input type="hidden" name="redirectTo" value={`/dashboard/org?opportunityId=${selectedOpportunity?.id || ""}`} />
+                    <label className="text-sm font-medium text-slate-700">
+                      Review this student (1-5) *
+                      <select name="rating" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                        <option value="">Select rating</option>
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Strong</option>
+                        <option value="3">3 - Good</option>
+                        <option value="2">2 - Fair</option>
+                        <option value="1">1 - Needs improvement</option>
+                      </select>
+                    </label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Optional feedback
+                      <textarea name="feedback" rows={2} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                    </label>
+                    <button type="submit" className="w-fit rounded-md bg-slate-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+                      Save Review
+                    </button>
+                  </form>
+                )}
 
                 {req.serviceHourForm ? (
                   <>

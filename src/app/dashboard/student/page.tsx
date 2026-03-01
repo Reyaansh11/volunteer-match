@@ -1,5 +1,6 @@
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { SKILL_OPTIONS } from "@/lib/form-options";
 import { rankOpportunities } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
@@ -65,6 +66,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
   const incomingRequests = requests.filter((req) => req.status === MatchRequestStatus.PENDING && req.initiatedBy === RequestInitiator.ORG);
   const outgoingRequests = requests.filter((req) => req.initiatedBy === RequestInitiator.STUDENT);
   const acceptedRequests = requests.filter((req) => req.status === MatchRequestStatus.ACCEPTED);
+  const selectedSkills = new Set(student.skills.map((entry) => entry.skill.name.toLowerCase()));
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-6 py-12">
@@ -79,6 +81,88 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         </div>
         {params.error ? <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{params.error}</p> : null}
         {params.success ? <p className="mt-3 rounded-md bg-green-50 p-2 text-sm text-green-700">{params.success}</p> : null}
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900">Edit Your Profile</h2>
+        <form action="/api/profile/student/update" method="post" className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="text-sm font-medium text-slate-700">
+            Full Name *
+            <input name="fullName" defaultValue={student.fullName} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            School
+            <input name="school" defaultValue={student.school || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            ZIP Code *
+            <input name="zipCode" defaultValue={student.zipCode} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            City
+            <input name="city" defaultValue={student.city || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            State
+            <input name="state" defaultValue={student.state || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Phone
+            <input name="phone" defaultValue={student.phone || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Program Affiliation
+            <input name="programAffiliation" defaultValue={student.programAffiliation || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Max Travel Distance (km)
+            <input
+              name="maxDistanceKm"
+              type="number"
+              step="1"
+              min="1"
+              defaultValue={student.maxDistanceKm}
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            />
+          </label>
+          <label className="md:col-span-2 text-sm font-medium text-slate-700">
+            Personal Statement
+            <textarea name="personalStatement" rows={3} defaultValue={student.personalStatement || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="md:col-span-2 text-sm font-medium text-slate-700">
+            Letter of Recommendation URL
+            <input name="letterOfRecUrl" type="url" defaultValue={student.letterOfRecUrl || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="md:col-span-2 text-sm font-medium text-slate-700">
+            Availability / Schedule *
+            <textarea name="availability" rows={2} defaultValue={student.availability} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+
+          <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-semibold text-slate-900">Skills You Can Offer *</legend>
+            <div className="mt-2 grid gap-2 md:grid-cols-3">
+              {SKILL_OPTIONS.map((skill) => (
+                <label key={skill} className="flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" name="skills" value={skill} defaultChecked={selectedSkills.has(skill)} />
+                  <span className="capitalize">{skill}</span>
+                </label>
+              ))}
+            </div>
+            <label className="mt-3 block text-sm font-medium text-slate-700">
+              Add custom skills (optional, comma-separated)
+              <input name="skillsCustom" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+            </label>
+          </fieldset>
+
+          <label className="md:col-span-2 flex items-center gap-2 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+            <input name="parentConsent" type="checkbox" defaultChecked={student.parentConsent} />
+            Parent/guardian consent has been obtained if required.
+          </label>
+
+          <button type="submit" className="md:col-span-2 w-fit rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
+            Save Profile Changes
+          </button>
+        </form>
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">

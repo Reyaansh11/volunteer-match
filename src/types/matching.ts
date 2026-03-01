@@ -28,6 +28,8 @@ export type RankedStudent = {
   programAffiliation: string | null;
   personalStatement: string | null;
   letterOfRecUrl: string | null;
+  averageRating: number | null;
+  reviewCount: number;
   rank: number;
   distanceKm: number;
   availability: string;
