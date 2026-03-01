@@ -5,7 +5,13 @@ import { getCurrentUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "ServeConnect",
-  description: "Connect students with local service opportunities"
+  description: "Connect students with local service opportunities",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    shortcut: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/icon.png", type: "image/png" }]
+  }
 };
 
 export const dynamic = "force-dynamic";
