@@ -3,12 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --bg: #f4f7f6;
-  --text: #15211e;
+  --bg: #f2f7f5;
+  --text: #101916;
+  --muted: #587067;
 }
 
 body {
   color: var(--text);
-  background: radial-gradient(circle at top, #d8ece9 0%, var(--bg) 45%);
+  background:
+    radial-gradient(circle at 15% -10%, #d8ece9 0%, rgba(216, 236, 233, 0) 42%),
+    radial-gradient(circle at 110% 0%, #dfece5 0%, rgba(223, 236, 229, 0) 37%),
+    linear-gradient(180deg, #f7fbf9 0%, var(--bg) 70%);
   min-height: 100vh;
+}
+
+::selection {
+  background: #2f7a7126;
 }

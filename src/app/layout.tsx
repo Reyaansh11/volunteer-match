@@ -4,9 +4,11 @@ import "./globals.css";
 import { getCurrentUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "Volunteer Match",
-  description: "Connect students with local volunteering opportunities"
+  title: "ServeConnect",
+  description: "Connect students with local service opportunities"
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const user = await getCurrentUser();
@@ -14,10 +16,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en">
       <body>
-        <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/90 backdrop-blur">
           <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-            <Link href="/" className="text-lg font-semibold text-brand-700">
-              Volunteer Match
+            <Link href="/" className="text-lg font-semibold tracking-tight text-brand-700">
+              ServeConnect
             </Link>
             <nav className="flex items-center gap-3 text-sm">
               <Link href="/opportunities" className="rounded-md px-3 py-1.5 text-slate-700 hover:bg-slate-100">

@@ -2,19 +2,27 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 export default async function OpportunitiesPage() {
-  const opportunities = await prisma.opportunity.findMany({
-    include: {
-      orgProfile: true,
-      skills: {
-        include: {
-          skill: true
+  let opportunities: any[] = [];
+  let loadError: string | null = null;
+
+  try {
+    opportunities = await prisma.opportunity.findMany({
+      include: {
+        orgProfile: true,
+        skills: {
+          include: {
+            skill: true
+          }
         }
+      },
+      orderBy: {
+        id: "asc"
       }
-    },
-    orderBy: {
-      id: "asc"
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Failed to load opportunities", error);
+    loadError = "We could not load opportunities right now. Please try again in a minute.";
+  }
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-6 py-12">
@@ -26,7 +34,9 @@ export default async function OpportunitiesPage() {
       </header>
 
       <section className="grid gap-4">
-        {opportunities.length === 0 ? (
+        {loadError ? (
+          <article className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{loadError}</article>
+        ) : opportunities.length === 0 ? (
           <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">No opportunities found.</article>
         ) : (
           opportunities.map((opportunity) => (
@@ -38,7 +48,7 @@ export default async function OpportunitiesPage() {
               <p className="mt-2 text-sm text-slate-700">Availability: {opportunity.availability}</p>
               <p className="mt-2 text-sm text-slate-700">Contact details are shared after an accepted match request.</p>
               <p className="mt-2 text-sm text-slate-700">
-                Skills needed: {opportunity.skills.map((s) => `${s.skill.name}${s.required ? " (required)" : ""}`).join(", ") || "None"}
+                Skills needed: {opportunity.skills.map((s: any) => `${s.skill.name}${s.required ? " (required)" : ""}`).join(", ") || "None"}
               </p>
             </article>
           ))

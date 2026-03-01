@@ -51,33 +51,38 @@ export async function destroySession(token: string) {
 }
 
 export async function getCurrentUser() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(SESSION_COOKIE)?.value;
 
-  if (!token) {
-    return null;
-  }
+    if (!token) {
+      return null;
+    }
 
-  const session = await prisma.session.findUnique({
-    where: { tokenHash: hashToken(token) },
-    include: {
-      user: {
-        include: {
-          student: true,
-          org: true
+    const session = await prisma.session.findUnique({
+      where: { tokenHash: hashToken(token) },
+      include: {
+        user: {
+          include: {
+            student: true,
+            org: true
+          }
         }
       }
-    }
-  });
+    });
 
-  if (!session || session.expiresAt < new Date()) {
-    if (session) {
-      await prisma.session.delete({ where: { id: session.id } });
+    if (!session || session.expiresAt < new Date()) {
+      if (session) {
+        await prisma.session.delete({ where: { id: session.id } });
+      }
+      return null;
     }
+
+    return session.user;
+  } catch (error) {
+    console.error("getCurrentUser failed", error);
     return null;
   }
-
-  return session.user;
 }
 
 export function getSessionCookieOptions(expiresAt: Date) {

@@ -1,4 +1,4 @@
-# Volunteer Match Website
+# ServeConnect Website
 
 A two-sided platform for students and volunteer programs/senior homes, with:
 - role-based signup/login
