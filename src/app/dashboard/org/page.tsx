@@ -2,19 +2,21 @@ import Link from "next/link";
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { AvailabilityPicker } from "@/components/availability-picker";
+import { OrgOnboardingGuide } from "@/components/org-onboarding-guide";
 import { COMMITMENT_OPTIONS, SKILL_OPTIONS } from "@/lib/form-options";
 import { rankStudentsForOpportunity } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
 
 type OrgDashboardProps = {
-  searchParams: Promise<{ opportunityId?: string; error?: string; success?: string; editProfile?: string }>;
+  searchParams: Promise<{ opportunityId?: string; error?: string; success?: string; editProfile?: string; onboarding?: string }>;
 };
 
 export default async function OrgDashboardPage({ searchParams }: OrgDashboardProps) {
   const user = await requireRole(UserRole.ORG);
   const params = await searchParams;
   const showEditProfile = params.editProfile === "1";
+  const showOnboarding = params.onboarding === "1";
 
   if (!user.org) {
     redirect("/register/org");
@@ -52,6 +54,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
   const selectedOpportunity = org.opportunities.find((opp) => opp.id === selectedOpportunityId) || org.opportunities[0] || null;
   const editProfileHref = selectedOpportunity ? `/dashboard/org?opportunityId=${selectedOpportunity.id}&editProfile=1` : "/dashboard/org?editProfile=1";
   const closeProfileHref = selectedOpportunity ? `/dashboard/org?opportunityId=${selectedOpportunity.id}` : "/dashboard/org";
+  const closeOnboardingHref = selectedOpportunity ? `/dashboard/org?opportunityId=${selectedOpportunity.id}` : "/dashboard/org";
 
   const students = await prisma.studentProfile.findMany({
     include: {
@@ -172,6 +175,14 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
             Save Program Changes
           </button>
             </form>
+          </div>
+        </section>
+      ) : null}
+
+      {showOnboarding ? (
+        <section className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="w-full max-w-2xl">
+            <OrgOnboardingGuide closeHref={closeOnboardingHref} />
           </div>
         </section>
       ) : null}

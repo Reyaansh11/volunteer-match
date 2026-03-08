@@ -118,7 +118,7 @@ export async function POST(request: Request) {
     }
 
     const session = await createSession(user.id);
-    const response = NextResponse.redirect(new URL("/dashboard/org", request.url), 303);
+    const response = NextResponse.redirect(new URL("/dashboard/org?onboarding=1", request.url), 303);
     response.cookies.set(SESSION_COOKIE, session.token, getSessionCookieOptions(session.expiresAt));
     return response;
   } catch (error) {

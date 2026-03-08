@@ -6,39 +6,48 @@ const PROTECTED_STUDENT_NAME = "reyaansh tomar";
 const DEMO_STUDENT_NAMES = ["Maya Brooks", "Jordan Patel"];
 const DEMO_STUDENT_EMAILS = ["student1@example.com", "student2@example.com"];
 const DEMO_OPPORTUNITY_TITLES = ["Conversation & Story Hour", "Music & Entertainment Volunteer"];
+const DEMO_ORG_NAMES = ["Sunrise Senior Home", "Oakview Senior Residence"];
+const DEMO_ORG_EMAILS = ["sunrise-home@example.com", "oakview-home@example.com"];
 
 async function main() {
-  const protectedStudents = await prisma.studentProfile.findMany({
+  const reyaanshStudents = await prisma.studentProfile.findMany({
     where: {
       fullName: {
         equals: PROTECTED_STUDENT_NAME,
         mode: "insensitive"
       }
     },
-    select: { id: true, fullName: true, userId: true }
+    select: { id: true, fullName: true, userId: true },
+    orderBy: { id: "asc" }
   });
 
-  const protectedStudentIds = protectedStudents.map((student) => student.id);
-  const protectedUserIds = protectedStudents.map((student) => student.userId);
+  const keptReyaansh = reyaanshStudents[0] ?? null;
+  const protectedUserIds = keptReyaansh ? [keptReyaansh.userId] : [];
+  const duplicateReyaanshUserIds = reyaanshStudents.slice(1).map((student) => student.userId);
 
   const deletedOpportunities = await prisma.opportunity.deleteMany({
     where: {
       OR: [
         { title: { in: DEMO_OPPORTUNITY_TITLES } },
-        { orgProfile: { organization: { in: ["Sunrise Senior Home", "Oakview Senior Residence"] } } }
+        { title: { contains: "test", mode: "insensitive" } },
+        { title: { contains: "demo", mode: "insensitive" } },
+        { orgProfile: { organization: { in: DEMO_ORG_NAMES } } },
+        { orgProfile: { organization: { contains: "test", mode: "insensitive" } } },
+        { orgProfile: { organization: { contains: "demo", mode: "insensitive" } } }
       ]
     }
   });
 
-  const deletedUsers = await prisma.user.deleteMany({
+  const deletedStudentUsers = await prisma.user.deleteMany({
     where: {
       role: UserRole.STUDENT,
-      id: {
-        notIn: protectedUserIds
-      },
+      id: { notIn: protectedUserIds },
       OR: [
+        { id: { in: duplicateReyaanshUserIds } },
         { email: { in: DEMO_STUDENT_EMAILS } },
+        { email: { contains: "example.com", mode: "insensitive" } },
         { email: { contains: "test", mode: "insensitive" } },
+        { email: { contains: "demo", mode: "insensitive" } },
         {
           student: {
             fullName: { in: DEMO_STUDENT_NAMES }
@@ -48,6 +57,38 @@ async function main() {
           student: {
             fullName: { contains: "test", mode: "insensitive" }
           }
+        },
+        {
+          student: {
+            fullName: { contains: "demo", mode: "insensitive" }
+          }
+        }
+      ]
+    }
+  });
+
+  const deletedOrgUsers = await prisma.user.deleteMany({
+    where: {
+      role: UserRole.ORG,
+      OR: [
+        { email: { in: DEMO_ORG_EMAILS } },
+        { email: { contains: "example.com", mode: "insensitive" } },
+        { email: { contains: "test", mode: "insensitive" } },
+        { email: { contains: "demo", mode: "insensitive" } },
+        {
+          org: {
+            organization: { in: DEMO_ORG_NAMES }
+          }
+        },
+        {
+          org: {
+            organization: { contains: "test", mode: "insensitive" }
+          }
+        },
+        {
+          org: {
+            organization: { contains: "demo", mode: "insensitive" }
+          }
         }
       ]
     }
@@ -55,7 +96,10 @@ async function main() {
 
   const remainingStudents = await prisma.studentProfile.findMany({
     where: {
-      id: { in: protectedStudentIds }
+      fullName: {
+        equals: PROTECTED_STUDENT_NAME,
+        mode: "insensitive"
+      }
     },
     select: {
       id: true,
@@ -71,7 +115,8 @@ async function main() {
   console.log("Cleanup complete");
   console.log({
     deletedOpportunities: deletedOpportunities.count,
-    deletedStudentUsers: deletedUsers.count,
+    deletedStudentUsers: deletedStudentUsers.count,
+    deletedOrgUsers: deletedOrgUsers.count,
     preservedStudents: remainingStudents
   });
 }

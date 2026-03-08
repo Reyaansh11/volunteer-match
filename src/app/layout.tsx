@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const user = await getCurrentUser();
-  const navItemClass = "w-full rounded-md px-3 py-2 text-center text-sm font-medium";
+  const navItemClass = "min-w-[120px] flex-1 rounded-md px-3 py-2 text-center text-sm font-medium sm:min-w-0 sm:flex-none";
   const currentYear = new Date().getFullYear();
 
   return (
@@ -30,12 +30,17 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <Link href="/" className="text-lg font-semibold tracking-tight text-brand-700">
               ServeConnect
             </Link>
-            <nav className="grid w-full grid-cols-3 gap-2 sm:w-auto sm:auto-cols-max sm:grid-flow-col">
+            <nav className="flex w-full flex-wrap gap-2 sm:w-auto">
               <Link href="/opportunities" className={`${navItemClass} text-slate-700 hover:bg-slate-100`}>
                 Opportunities
               </Link>
               {user ? (
                 <>
+                  {user.role === "ORG" ? (
+                    <Link href="/onboarding/org" className={`${navItemClass} text-slate-700 hover:bg-slate-100`}>
+                      Onboarding
+                    </Link>
+                  ) : null}
                   <Link
                     href={user.role === "STUDENT" ? "/dashboard/student" : "/dashboard/org"}
                     className={`${navItemClass} text-slate-700 hover:bg-slate-100`}
