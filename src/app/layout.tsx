@@ -23,8 +23,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const currentYear = new Date().getFullYear();
 
   return (
-    <html lang="en">
-      <body className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
+    <html lang="en" className="h-full">
+      <body className="h-full bg-slate-50 text-slate-900">
+        <div className="flex min-h-dvh flex-col">
         <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/90 backdrop-blur">
           <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <Link href="/" className="text-lg font-semibold tracking-tight text-brand-700">
@@ -84,6 +85,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           </div>
         </footer>
         <Analytics />
+        </div>
       </body>
     </html>
   );
