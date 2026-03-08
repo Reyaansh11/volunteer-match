@@ -24,7 +24,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-50 text-slate-900">
+      <body className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
         <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/90 backdrop-blur">
           <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <Link href="/" className="text-lg font-semibold tracking-tight text-brand-700">
@@ -66,7 +66,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             </nav>
           </div>
         </header>
-        <div>{children}</div>
+        <main className="flex-1">{children}</main>
         <footer className="border-t border-slate-200 bg-white">
           <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <p>© {currentYear} ServeConnect. All rights reserved.</p>
