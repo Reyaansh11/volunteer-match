@@ -68,6 +68,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ formId: st
     studentEmail: form.studentEmail,
     orgName: form.orgName,
     orgEmail: form.orgEmail,
+    orgPhone: form.matchRequest.orgProfile.contactPhone,
+    orgContactName: form.matchRequest.orgProfile.contactName,
     supervisorName: form.filledByName,
     opportunityTitle: form.opportunity,
     hoursCompleted: form.hoursCompleted,
@@ -76,7 +78,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ formId: st
   });
 
   const filename = `service-hours-${form.id}.docx`;
-  return new NextResponse(docBuffer, {
+  return new NextResponse(new Uint8Array(docBuffer), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "Content-Disposition": `attachment; filename=\"${filename}\"`
