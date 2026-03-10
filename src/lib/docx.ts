@@ -27,6 +27,7 @@ export type ServiceHourDocInput = {
   orgContactName: string;
   supervisorName: string;
   opportunityTitle: string;
+  opportunityDescription: string | null;
   hoursCompleted: number | null;
   serviceDate: Date | null;
   activityNotes: string | null;
@@ -76,23 +77,34 @@ function buildDocumentXml(input: ServiceHourDocInput, includeLogo: boolean) {
   const serviceDate = input.serviceDate ? input.serviceDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
   const hours = input.hoursCompleted != null ? String(input.hoursCompleted) : "N/A";
   const orgContact = `${input.orgContactName} | ${input.orgEmail}${input.orgPhone ? ` | ${input.orgPhone}` : ""}`;
-  const description = input.activityNotes || "No description provided.";
+  const description = input.opportunityDescription || "No description provided.";
+  const notes = input.activityNotes || "None provided.";
 
   const paragraphs = [
     includeLogo ? logoParagraph() : "",
     boldParagraph("ServeConnect Service Hour Verification"),
-    paragraph(`Date: ${serviceDate}`),
-    paragraph(`Student Name: ${input.studentFullName}`),
-    paragraph(`Student Email: ${input.studentEmail}`),
+    paragraph(`Date Issued: ${serviceDate}`),
+    paragraph(""),
+    boldParagraph("Student Information"),
+    paragraph(`Name: ${input.studentFullName}`),
+    paragraph(`Email: ${input.studentEmail}`),
+    paragraph(""),
+    boldParagraph("Organization Information"),
     paragraph(`Organization: ${input.orgName}`),
-    paragraph(`Organization Contact: ${orgContact}`),
+    paragraph(`Contact: ${orgContact}`),
+    paragraph(""),
+    boldParagraph("Service Details"),
     paragraph(`Opportunity: ${input.opportunityTitle}`),
     paragraph(`Description of Work: ${description}`),
     paragraph(`Hours Worked: ${hours}`),
-    boldParagraph("Verified by ServeConnect"),
-    paragraph("Student Signature: ________________________________"),
-    paragraph("Signature Date: _________________________________"),
-    paragraph("Organization Verification: Verified by ServeConnect (digital verification)")
+    paragraph(`Activity Notes: ${notes}`),
+    paragraph(""),
+    boldParagraph("Verification"),
+    paragraph("Verified by ServeConnect (digital verification)"),
+    paragraph(""),
+    boldParagraph("Student Signature"),
+    paragraph("Signature: ________________________________"),
+    paragraph("Date: _________________________________")
   ].join("");
 
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>

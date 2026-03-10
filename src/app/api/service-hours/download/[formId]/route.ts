@@ -72,6 +72,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ formId: st
     orgContactName: form.matchRequest.orgProfile.contactName,
     supervisorName: form.filledByName,
     opportunityTitle: form.opportunity,
+    opportunityDescription: form.matchRequest.opportunity.description,
     hoursCompleted: form.hoursCompleted,
     serviceDate: form.serviceDate,
     activityNotes: form.activityNotes

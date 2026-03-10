@@ -12,7 +12,9 @@
     "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "db:cleanup-demo": "tsx prisma/cleanup-demo.ts"
+    "db:cleanup-demo": "tsx prisma/cleanup-demo.ts",
+    "db:prune-reyaansh": "tsx prisma/prune-to-reyaansh.ts",
+    "db:prune-reyaansh:node": "node prisma/prune-to-reyaansh.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",
