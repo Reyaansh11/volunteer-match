@@ -33,6 +33,7 @@ export async function POST(request: Request) {
   const state = String(formData.get("state") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const contactName = String(formData.get("contactName") || "").trim();
+  const contactTitle = String(formData.get("contactTitle") || "").trim();
   const contactEmail = String(formData.get("contactEmail") || "").trim().toLowerCase();
   const contactPhone = String(formData.get("contactPhone") || "").trim();
   const websiteUrl = String(formData.get("websiteUrl") || "").trim();
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
   const normalizedCommitment =
     oneDayOpportunity && requiredCommitment ? "One-time event" : requiredCommitment;
 
-  if (!email || !password || !organization || !zipCode || !contactName || !contactEmail) {
+  if (!email || !password || !organization || !zipCode || !contactName || !contactTitle || !contactEmail) {
     return redirectWithError(request, "Please complete all required fields.");
   }
   if (password.length < 8) {
@@ -72,6 +73,7 @@ export async function POST(request: Request) {
             lng: latLng.lng,
             description: description || null,
             contactName,
+            contactTitle,
             contactEmail,
             contactPhone: contactPhone || null,
             websiteUrl: websiteUrl || null,

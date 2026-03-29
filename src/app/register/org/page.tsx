@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AvailabilityPicker } from "@/components/availability-picker";
-import { COMMITMENT_OPTIONS, SKILL_OPTIONS } from "@/lib/form-options";
+import { COMMITMENT_OPTIONS, SKILL_OPTIONS, SUPERVISOR_TITLE_OPTIONS } from "@/lib/form-options";
 
 type OrgRegisterProps = {
   searchParams: Promise<{ error?: string }>;
@@ -37,6 +37,15 @@ export default async function OrgRegisterPage({ searchParams }: OrgRegisterProps
           <label className="text-sm font-medium text-slate-700">
             Contact Name *
             <input name="contactName" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Contact Title *
+            <select name="contactTitle" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+              <option value="">Select title</option>
+              {SUPERVISOR_TITLE_OPTIONS.map((title) => (
+                <option key={title} value={title}>{title}</option>
+              ))}
+            </select>
           </label>
           <label className="text-sm font-medium text-slate-700">
             Contact Email *

@@ -258,7 +258,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
                     href={`/api/service-hours/download/${req.serviceHourForm?.id}`}
                     className="mt-2 inline-block rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500"
                   >
-                    Download NHS DOCX
+                    Download NHS PDF
                   </a>
                   <pre className="mt-3 whitespace-pre-wrap rounded-md bg-slate-50 p-3 text-xs text-slate-700">{req.serviceHourForm?.generatedText}</pre>
                 </article>

@@ -84,6 +84,7 @@ model OrgProfile {
   lng            Float
   description    String?
   contactName    String
+  contactTitle   String?               // adult supervisor title
   contactEmail   String
   contactPhone   String?
   websiteUrl     String?
@@ -202,15 +203,19 @@ model ServiceHourForm {
   matchRequestId Int          @unique
   status         String       @default("FILLED")
   serviceDate    DateTime?
+  supervisorSignedAt DateTime?
   hoursCompleted Float?
-  activityNotes  String?
+  activityNotes  String
   filledByName   String
+  filledByTitle  String?
   studentName    String
   studentEmail   String
   orgName        String
   orgEmail       String
+  orgPhone       String?
   opportunity    String
   generatedText  String
+  generatedPdf   Bytes?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   matchRequest   MatchRequest @relation(fields: [matchRequestId], references: [id], onDelete: Cascade)

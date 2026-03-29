@@ -1,7 +1,6 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { generateServiceHourDocx } from "@/lib/docx";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -60,28 +59,14 @@ export async function GET(_: Request, { params }: { params: Promise<{ formId: st
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const nameParts = splitName(form.studentName);
-  const docBuffer = await generateServiceHourDocx({
-    studentFirstName: nameParts.first,
-    studentLastName: nameParts.last,
-    studentFullName: form.studentName,
-    studentEmail: form.studentEmail,
-    orgName: form.orgName,
-    orgEmail: form.orgEmail,
-    orgPhone: form.matchRequest.orgProfile.contactPhone,
-    orgContactName: form.matchRequest.orgProfile.contactName,
-    supervisorName: form.filledByName,
-    opportunityTitle: form.opportunity,
-    opportunityDescription: form.matchRequest.opportunity.description,
-    hoursCompleted: form.hoursCompleted,
-    serviceDate: form.serviceDate,
-    activityNotes: form.activityNotes
-  });
+  if (!form.generatedPdf) {
+    return NextResponse.json({ error: "PDF not available yet. Please re-submit the service form." }, { status: 409 });
+  }
 
-  const filename = `service-hours-${form.id}.docx`;
-  return new NextResponse(new Uint8Array(docBuffer), {
+  const filename = `nhs-service-form-${form.id}.pdf`;
+  return new NextResponse(new Uint8Array(form.generatedPdf), {
     headers: {
-      "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename=\"${filename}\"`
     }
   });

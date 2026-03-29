@@ -27,12 +27,13 @@ export async function POST(request: Request) {
   const state = String(formData.get("state") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const contactName = String(formData.get("contactName") || "").trim();
+  const contactTitle = String(formData.get("contactTitle") || "").trim();
   const contactEmail = String(formData.get("contactEmail") || "").trim().toLowerCase();
   const contactPhone = String(formData.get("contactPhone") || "").trim();
   const websiteUrl = String(formData.get("websiteUrl") || "").trim();
   const volunteerNotes = String(formData.get("volunteerNotes") || "").trim();
 
-  if (!organization || !zipCode || !contactName || !contactEmail) {
+  if (!organization || !zipCode || !contactName || !contactTitle || !contactEmail) {
     return redirectWithNotice(request, "error", "Please complete all required fields.");
   }
 
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
         state: state || null,
         description: description || null,
         contactName,
+        contactTitle,
         contactEmail,
         contactPhone: contactPhone || null,
         websiteUrl: websiteUrl || null,

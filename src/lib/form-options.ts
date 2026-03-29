@@ -33,6 +33,17 @@ export const COMMITMENT_OPTIONS = [
   "Flexible"
 ] as const;
 
+export const SUPERVISOR_TITLE_OPTIONS = [
+  "Coach",
+  "Supervisor",
+  "Advisor",
+  "Manager",
+  "Director",
+  "Coordinator",
+  "Teacher",
+  "Other"
+] as const;
+
 export const DAY_OPTIONS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 export const TIME_OPTIONS = [

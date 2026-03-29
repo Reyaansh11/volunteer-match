@@ -3,7 +3,8 @@ import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { AvailabilityPicker } from "@/components/availability-picker";
 import { OrgOnboardingGuide } from "@/components/org-onboarding-guide";
-import { COMMITMENT_OPTIONS, SKILL_OPTIONS } from "@/lib/form-options";
+import { SignaturePad } from "@/components/signature-pad";
+import { COMMITMENT_OPTIONS, SKILL_OPTIONS, SUPERVISOR_TITLE_OPTIONS } from "@/lib/form-options";
 import { rankStudentsForOpportunity } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
@@ -111,7 +112,9 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
           </a>
         </div>
         <p className="mt-2 text-sm text-slate-700">{org.organization}</p>
-        <p className="mt-2 text-sm text-slate-700">Contact: {org.contactName} | {org.contactEmail}{org.contactPhone ? ` | ${org.contactPhone}` : ""}</p>
+        <p className="mt-2 text-sm text-slate-700">
+          Contact: {org.contactName}{org.contactTitle ? ` (${org.contactTitle})` : ""} | {org.contactEmail}{org.contactPhone ? ` | ${org.contactPhone}` : ""}
+        </p>
         <p className="mt-2 text-sm text-slate-700">{org.description || "Add organization details in your profile as needed."}</p>
         {params.error ? <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{params.error}</p> : null}
         {params.success ? <p className="mt-3 rounded-md bg-green-50 p-2 text-sm text-green-700">{params.success}</p> : null}
@@ -150,6 +153,15 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
           <label className="text-sm font-medium text-slate-700">
             Contact Name *
             <input name="contactName" defaultValue={org.contactName} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Contact Title *
+            <select name="contactTitle" defaultValue={org.contactTitle || ""} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+              <option value="">Select title</option>
+              {SUPERVISOR_TITLE_OPTIONS.map((title) => (
+                <option key={title} value={title}>{title}</option>
+              ))}
+            </select>
           </label>
           <label className="text-sm font-medium text-slate-700">
             Contact Email *
@@ -411,7 +423,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                       href={`/api/service-hours/download/${req.serviceHourForm.id}`}
                       className="mt-2 inline-block rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500"
                     >
-                      Download NHS DOCX
+                      Download NHS PDF
                     </a>
                     <pre className="mt-2 whitespace-pre-wrap rounded-md bg-slate-50 p-3 text-xs text-slate-700">{req.serviceHourForm.generatedText}</pre>
                   </>
@@ -427,9 +439,18 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                       Service Date
                       <input name="serviceDate" type="date" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
                     </label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Supervisor Signature Date
+                      <input name="supervisorSignedAt" type="date" required defaultValue={new Date().toISOString().slice(0, 10)} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                    </label>
                     <label className="text-sm font-medium text-slate-700 md:col-span-3">
-                      Activity Notes
-                      <textarea name="activityNotes" rows={2} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                      Candidate Participation/Contribution *
+                      <textarea name="activityNotes" rows={2} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                    </label>
+                    <label className="text-sm font-medium text-slate-700 md:col-span-3">
+                      Supervisor Signature *
+                      <SignaturePad inputName="supervisorSignature" />
+                      <p className="mt-2 text-xs text-slate-500">Signature is embedded only in the generated PDF and is not stored separately.</p>
                     </label>
                     <button type="submit" className="w-fit rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500">
                       Fill Service Hour Form
