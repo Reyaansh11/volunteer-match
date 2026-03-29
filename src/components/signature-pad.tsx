@@ -11,6 +11,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const drawingRef = useRef(false);
   const hasDrawnRef = useRef(false);
+  const savedDataUrlRef = useRef("");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -19,6 +20,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     if (!ctx) return;
 
     const resize = () => {
+      const existing = inputRef.current?.value || savedDataUrlRef.current;
       const rect = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
       canvas.width = Math.max(1, Math.floor(rect.width * dpr));
@@ -27,6 +29,14 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
       ctx.lineWidth = 2;
       ctx.lineCap = "round";
       ctx.strokeStyle = "#111827";
+
+      if (existing) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, rect.width, rect.height);
+        };
+        img.src = existing;
+      }
     };
 
     resize();
@@ -57,7 +67,14 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     const canvas = canvasRef.current;
     const input = inputRef.current;
     if (!canvas || !input) return;
-    input.value = hasDrawnRef.current ? canvas.toDataURL("image/png") : "";
+    if (hasDrawnRef.current) {
+      const dataUrl = canvas.toDataURL("image/png");
+      input.value = dataUrl;
+      savedDataUrlRef.current = dataUrl;
+    } else {
+      input.value = "";
+      savedDataUrlRef.current = "";
+    }
   };
 
   const getPoint = (event: React.PointerEvent<HTMLCanvasElement>) => {
@@ -74,6 +91,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     if (!canvas || !ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     hasDrawnRef.current = false;
+    savedDataUrlRef.current = "";
     if (inputRef.current) inputRef.current.value = "";
   };
 
