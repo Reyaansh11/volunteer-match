@@ -10,6 +10,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const drawingRef = useRef(false);
+  const hasDrawnRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,6 +39,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     drawingRef.current = true;
+    hasDrawnRef.current = true;
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
@@ -55,7 +57,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     const canvas = canvasRef.current;
     const input = inputRef.current;
     if (!canvas || !input) return;
-    input.value = canvas.toDataURL("image/png");
+    input.value = hasDrawnRef.current ? canvas.toDataURL("image/png") : "";
   };
 
   const getPoint = (event: React.PointerEvent<HTMLCanvasElement>) => {
@@ -71,6 +73,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hasDrawnRef.current = false;
     if (inputRef.current) inputRef.current.value = "";
   };
 

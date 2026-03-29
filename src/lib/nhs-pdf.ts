@@ -33,13 +33,13 @@ export async function generateNhsPdf(input: NHSFormInput) {
   const { width, height } = page.getSize();
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const baseFontSize = 18;
+  const baseFontSize = 20;
   const minFontSize = 12;
   const textColor = rgb(0, 0, 0);
   const lineEnd = 1680;
 
   const fromTop = (offset: number) => height - offset;
-  const baselineOffset = 6;
+  const baselineOffset = 0;
 
   const fitText = (text: string, maxWidth: number, size = baseFontSize) => {
     const clean = sanitizeText(text);
@@ -74,28 +74,28 @@ export async function generateNhsPdf(input: NHSFormInput) {
     });
   };
 
-  drawOnLine(input.supervisorName, 740, 1558, lineEnd - 740);
-  drawOnLine(input.supervisorTitle || "Supervisor", 910, 1626, lineEnd - 910);
-  drawOnLine(input.supervisorContact, 500, 1706, lineEnd - 500);
+  drawOnLine(input.supervisorName, 800, 1558, lineEnd - 800, 22);
+  drawOnLine(input.supervisorTitle || "Supervisor", 940, 1626, lineEnd - 940, 21);
+  drawOnLine(input.supervisorContact, 540, 1714, lineEnd - 540, 21);
   drawOnLine(input.sponsoringGroup, 710, 1784, lineEnd - 710);
-  drawOnLine(input.contribution, 880, 1876, lineEnd - 880);
+  drawOnLine(input.contribution, 920, 1876, lineEnd - 920, 21);
 
   const signatureBytes = dataUrlToBytes(input.signatureDataUrl);
   if (signatureBytes) {
     const image = await pdfDoc.embedPng(signatureBytes);
     const sigX = 820;
-    const sigLineY = fromTop(2010);
-    const sigWidth = Math.min(360, lineEnd - sigX - 10);
-    const sigHeight = 54;
+    const sigLineY = fromTop(2020);
+    const sigWidth = Math.min(420, lineEnd - sigX - 10);
+    const sigHeight = 64;
     page.drawImage(image, {
       x: sigX,
-      y: sigLineY - 12,
+      y: sigLineY - 18,
       width: sigWidth,
       height: sigHeight
     });
     page.drawText("Verified by ServeConnect", {
       x: Math.min(sigX + sigWidth + 12, lineEnd - 220),
-      y: sigLineY - 28,
+      y: sigLineY - 36,
       size: 8,
       font,
       color: textColor
@@ -103,7 +103,7 @@ export async function generateNhsPdf(input: NHSFormInput) {
   }
 
   const dateText = input.signatureDate.toLocaleDateString("en-US");
-  drawOnLine(dateText, 260, 2158, 900 - 260);
+  drawOnLine(dateText, 320, 2166, 980 - 320, 21);
 
   const bytes = await pdfDoc.save();
   return Buffer.from(bytes);
