@@ -33,51 +33,77 @@ export async function generateNhsPdf(input: NHSFormInput) {
   const { width, height } = page.getSize();
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const fontSize = 10;
+  const baseFontSize = 18;
+  const minFontSize = 12;
   const textColor = rgb(0, 0, 0);
+  const lineEnd = 1680;
 
-  const line = (text: string, x: number, y: number, size = fontSize) => {
-    page.drawText(sanitizeText(text), {
+  const fromTop = (offset: number) => height - offset;
+  const baselineOffset = 6;
+
+  const fitText = (text: string, maxWidth: number, size = baseFontSize) => {
+    const clean = sanitizeText(text);
+    let fontSize = size;
+    let width = font.widthOfTextAtSize(clean, fontSize);
+    while (width > maxWidth && fontSize > minFontSize) {
+      fontSize -= 1;
+      width = font.widthOfTextAtSize(clean, fontSize);
+    }
+    if (width <= maxWidth) {
+      return { text: clean, size: fontSize };
+    }
+    let truncated = clean;
+    while (truncated.length > 0) {
+      truncated = truncated.slice(0, -1);
+      const candidate = `${truncated}...`;
+      if (font.widthOfTextAtSize(candidate, fontSize) <= maxWidth) {
+        return { text: candidate, size: fontSize };
+      }
+    }
+    return { text: clean, size: fontSize };
+  };
+
+  const drawOnLine = (text: string, x: number, topOffset: number, maxWidth: number, size = baseFontSize) => {
+    const { text: fittedText, size: fittedSize } = fitText(text, maxWidth, size);
+    page.drawText(fittedText, {
       x,
-      y,
-      size,
+      y: fromTop(topOffset) + baselineOffset,
+      size: fittedSize,
       font,
       color: textColor
     });
   };
 
-  // Coordinates calibrated for the provided scanned form (US Letter).
-  const fromTop = (offset: number) => height - offset;
-
-  line(input.supervisorName, 210, fromTop(512));
-  line(input.supervisorTitle || "Supervisor", 210, fromTop(540));
-  line(input.supervisorContact, 210, fromTop(568));
-  line(input.sponsoringGroup, 210, fromTop(596));
-
-  // Contribution line (wrap crudely across two lines if long).
-  const contribution = sanitizeText(input.contribution);
-  const splitIndex = contribution.length > 80 ? contribution.lastIndexOf(" ", 80) : -1;
-  const firstLine = splitIndex > 0 ? contribution.slice(0, splitIndex) : contribution;
-  const secondLine = splitIndex > 0 ? contribution.slice(splitIndex + 1) : "";
-  line(firstLine, 210, fromTop(624));
-  if (secondLine) {
-    line(secondLine, 210, fromTop(652));
-  }
+  drawOnLine(input.supervisorName, 740, 1558, lineEnd - 740);
+  drawOnLine(input.supervisorTitle || "Supervisor", 910, 1626, lineEnd - 910);
+  drawOnLine(input.supervisorContact, 500, 1706, lineEnd - 500);
+  drawOnLine(input.sponsoringGroup, 710, 1784, lineEnd - 710);
+  drawOnLine(input.contribution, 880, 1876, lineEnd - 880);
 
   const signatureBytes = dataUrlToBytes(input.signatureDataUrl);
   if (signatureBytes) {
     const image = await pdfDoc.embedPng(signatureBytes);
+    const sigX = 820;
+    const sigLineY = fromTop(2010);
+    const sigWidth = Math.min(360, lineEnd - sigX - 10);
+    const sigHeight = 54;
     page.drawImage(image, {
-      x: 200,
-      y: fromTop(692),
-      width: 180,
-      height: 48
+      x: sigX,
+      y: sigLineY - 12,
+      width: sigWidth,
+      height: sigHeight
     });
-    line("Verified by ServeConnect", 400, fromTop(712), 8);
+    page.drawText("Verified by ServeConnect", {
+      x: Math.min(sigX + sigWidth + 12, lineEnd - 220),
+      y: sigLineY - 28,
+      size: 8,
+      font,
+      color: textColor
+    });
   }
 
   const dateText = input.signatureDate.toLocaleDateString("en-US");
-  line(dateText, 210, fromTop(726));
+  drawOnLine(dateText, 260, 2158, 900 - 260);
 
   const bytes = await pdfDoc.save();
   return Buffer.from(bytes);
