@@ -13,6 +13,19 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
   const hasDrawnRef = useRef(false);
   const savedDataUrlRef = useRef("");
 
+  const restoreSignature = (dataUrl: string) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx || !dataUrl) return;
+    const rect = canvas.getBoundingClientRect();
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, rect.width, rect.height);
+    };
+    img.src = dataUrl;
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -31,11 +44,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
       ctx.strokeStyle = "#111827";
 
       if (existing) {
-        const img = new Image();
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0, rect.width, rect.height);
-        };
-        img.src = existing;
+        restoreSignature(existing);
       }
     };
 
@@ -71,6 +80,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
       const dataUrl = canvas.toDataURL("image/png");
       input.value = dataUrl;
       savedDataUrlRef.current = dataUrl;
+      restoreSignature(dataUrl);
     } else {
       input.value = "";
       savedDataUrlRef.current = "";
