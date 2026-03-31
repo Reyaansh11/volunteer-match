@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type SignaturePadProps = {
   inputName: string;
 };
 
 export function SignaturePad({ inputName }: SignaturePadProps) {
+  const [signatureDataUrl, setSignatureDataUrl] = useState("");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const drawingRef = useRef(false);
@@ -33,7 +34,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     if (!ctx) return;
 
     const resize = () => {
-      const existing = inputRef.current?.value || savedDataUrlRef.current;
+      const existing = signatureDataUrl || inputRef.current?.value || savedDataUrlRef.current;
       const rect = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
       canvas.width = Math.max(1, Math.floor(rect.width * dpr));
@@ -58,7 +59,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     drawingRef.current = true;
-    hasDrawnRef.current = true;
+    hasDrawnRef.current = false;
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
@@ -67,6 +68,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx || !drawingRef.current) return;
+    hasDrawnRef.current = true;
     ctx.lineTo(x, y);
     ctx.stroke();
   };
@@ -80,10 +82,8 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
       const dataUrl = canvas.toDataURL("image/png");
       input.value = dataUrl;
       savedDataUrlRef.current = dataUrl;
+      setSignatureDataUrl(dataUrl);
       restoreSignature(dataUrl);
-    } else {
-      input.value = "";
-      savedDataUrlRef.current = "";
     }
   };
 
@@ -102,12 +102,13 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     hasDrawnRef.current = false;
     savedDataUrlRef.current = "";
+    setSignatureDataUrl("");
     if (inputRef.current) inputRef.current.value = "";
   };
 
   return (
     <div className="space-y-2">
-      <input ref={inputRef} type="hidden" name={inputName} />
+      <input ref={inputRef} type="hidden" name={inputName} value={signatureDataUrl} readOnly />
       <div className="rounded-md border border-slate-300 bg-white p-2">
         <canvas
           ref={canvasRef}
@@ -125,6 +126,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
             event.currentTarget.releasePointerCapture(event.pointerId);
             end();
           }}
+          onPointerCancel={end}
           onPointerLeave={end}
         />
       </div>
