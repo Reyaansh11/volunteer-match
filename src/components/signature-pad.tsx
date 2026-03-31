@@ -54,6 +54,24 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
     return () => window.removeEventListener("resize", resize);
   }, []);
 
+  useEffect(() => {
+    const form = canvasRef.current?.closest("form");
+    if (!form) return;
+    const handleSubmit = () => {
+      const canvas = canvasRef.current;
+      const input = inputRef.current;
+      if (!canvas || !input) return;
+      if (hasDrawnRef.current) {
+        const dataUrl = canvas.toDataURL("image/png");
+        input.value = dataUrl;
+        savedDataUrlRef.current = dataUrl;
+        setSignatureDataUrl(dataUrl);
+      }
+    };
+    form.addEventListener("submit", handleSubmit);
+    return () => form.removeEventListener("submit", handleSubmit);
+  }, []);
+
   const start = (x: number, y: number) => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -130,6 +148,7 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
           onPointerLeave={end}
         />
       </div>
+      <p className="text-[11px] text-slate-500">Signature captured: {signatureDataUrl ? "Yes" : "No"}</p>
       <button type="button" onClick={clear} className="rounded-md bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200">
         Clear Signature
       </button>
