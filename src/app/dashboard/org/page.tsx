@@ -103,8 +103,45 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
   const requestKeyToStatus = new Map(requests.map((req) => [`${req.opportunityId}:${req.studentId}`, req.status]));
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-6 py-12">
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <aside className="self-start rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm lg:sticky lg:top-24">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-500">Organization Workspace</p>
+          <h2 className="mt-2 text-lg font-semibold text-slate-900">{org.organization}</h2>
+          <p className="mt-1 text-sm text-slate-700">Manage opportunities, review students, and complete verification forms.</p>
+
+          <dl className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-slate-500">Opportunities</dt>
+              <dd className="text-base font-semibold text-slate-900">{org.opportunities.length}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-slate-500">Incoming</dt>
+              <dd className="text-base font-semibold text-slate-900">{incomingRequests.length}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-slate-500">Accepted</dt>
+              <dd className="text-base font-semibold text-slate-900">{acceptedRequests.length}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-slate-500">Ranked</dt>
+              <dd className="text-base font-semibold text-slate-900">{rankedStudents.length}</dd>
+            </div>
+          </dl>
+
+          <nav className="mt-5 space-y-1 text-sm">
+            <a href="#org-overview" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Overview</a>
+            <a href="#org-incoming" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Incoming Requests</a>
+            <a href="#org-post" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Post Opportunity</a>
+            <a href="#org-opportunities" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Your Opportunities</a>
+            <a href="#org-ranked" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Ranked Students</a>
+            <a href="#org-accepted" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Accepted & Forms</a>
+            <a href="/dashboard/org?onboarding=1" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Open Onboarding Guide</a>
+          </nav>
+        </aside>
+
+        <div className="space-y-6">
+      <section id="org-overview" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold text-slate-900">Program Dashboard</h1>
           <a href={editProfileHref} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
@@ -199,7 +236,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         </section>
       ) : null}
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section id="org-incoming" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Incoming Match Requests</h2>
         <div className="mt-4 grid gap-3">
           {incomingRequests.length === 0 ? (
@@ -235,7 +272,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section id="org-post" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Post New Opportunity</h2>
         <form action="/api/org/opportunities/create" method="post" className="mt-4 grid gap-3 md:grid-cols-2">
           <label className="text-sm font-medium text-slate-700">
@@ -305,7 +342,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         </form>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section id="org-opportunities" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Your Opportunities</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           {org.opportunities.length === 0 ? (
@@ -325,7 +362,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
       </section>
 
       {selectedOpportunity && (
-        <section className="grid gap-4">
+        <section id="org-ranked" className="grid gap-4">
           <h2 className="text-xl font-semibold text-slate-900">Ranked Students for: {selectedOpportunity.title}</h2>
           {rankedStudents.map((student) => {
             const status = requestKeyToStatus.get(`${selectedOpportunity.id}:${student.studentId}`);
@@ -377,7 +414,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         </section>
       )}
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section id="org-accepted" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Accepted Matches and Service Forms</h2>
         <div className="mt-4 grid gap-4">
           {acceptedRequests.length === 0 ? (
@@ -462,6 +499,8 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
           )}
         </div>
       </section>
+        </div>
+      </div>
     </main>
   );
 }

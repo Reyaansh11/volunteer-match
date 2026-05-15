@@ -70,8 +70,44 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
   const selectedSkills = new Set(student.skills.map((entry) => entry.skill.name.toLowerCase()));
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-6 py-12">
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+      <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
+        <aside className="self-start rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm lg:sticky lg:top-24">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-500">Student Workspace</p>
+          <h2 className="mt-2 text-lg font-semibold text-slate-900">{student.fullName}</h2>
+          <p className="mt-1 text-sm text-slate-700">Track requests, contact matches, and download verified forms.</p>
+
+          <dl className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-slate-500">Incoming</dt>
+              <dd className="text-base font-semibold text-slate-900">{incomingRequests.length}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-slate-500">Accepted</dt>
+              <dd className="text-base font-semibold text-slate-900">{acceptedRequests.length}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-slate-500">Ranked</dt>
+              <dd className="text-base font-semibold text-slate-900">{ranked.length}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-slate-500">Forms</dt>
+              <dd className="text-base font-semibold text-slate-900">{acceptedRequests.filter((req) => req.serviceHourForm).length}</dd>
+            </div>
+          </dl>
+
+          <nav className="mt-5 space-y-1 text-sm">
+            <a href="#student-overview" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Overview</a>
+            <a href="#student-incoming" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Incoming Requests</a>
+            <a href="#student-matches" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Your Matches</a>
+            <a href="#student-forms" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Service Forms</a>
+            <a href="#student-ranked" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Ranked Opportunities</a>
+            <a href="#student-history" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Request History</a>
+          </nav>
+        </aside>
+
+        <div className="space-y-6">
+      <section id="student-overview" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold text-slate-900">Student Dashboard</h1>
           <a href="/dashboard/student?editProfile=1" className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
@@ -180,7 +216,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         </section>
       ) : null}
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section id="student-incoming" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Incoming Match Requests</h2>
         <div className="mt-4 grid gap-3">
           {incomingRequests.length === 0 ? (
@@ -216,7 +252,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section id="student-matches" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Your Matches</h2>
         <div className="mt-4 grid gap-3">
           {acceptedRequests.length === 0 ? (
@@ -239,7 +275,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section id="student-forms" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Filled Service Hour Forms</h2>
         <div className="mt-4 grid gap-3">
           {acceptedRequests.filter((req) => req.serviceHourForm).length === 0 ? (
@@ -267,7 +303,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         </div>
       </section>
 
-      <section className="grid gap-4">
+      <section id="student-ranked" className="grid gap-4">
         <h2 className="text-xl font-semibold text-slate-900">Ranked Opportunities</h2>
         {ranked.map((match) => {
           const existingRequest = requestByOpportunity.get(match.opportunityId);
@@ -315,7 +351,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         })}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section id="student-history" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Your Request History</h2>
         <div className="mt-4 grid gap-2 text-sm text-slate-700">
           {outgoingRequests.length === 0 ? (
@@ -329,6 +365,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           )}
         </div>
       </section>
+        </div>
+      </div>
     </main>
   );
 }

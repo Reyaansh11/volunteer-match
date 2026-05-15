@@ -27,7 +27,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body className="h-full bg-slate-50 text-slate-900">
         <div className="flex min-h-dvh flex-col">
         <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/90 backdrop-blur">
-          <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <Link href="/" className="text-lg font-semibold tracking-tight text-brand-700">
               ServeConnect
             </Link>
@@ -69,7 +69,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </header>
         <main className="flex-1">{children}</main>
         <footer className="border-t border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <p>© {currentYear} ServeConnect. All rights reserved.</p>
             <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <Link href="/privacy" className="hover:text-slate-900 hover:underline">
