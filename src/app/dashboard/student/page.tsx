@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { SKILL_OPTIONS } from "@/lib/form-options";
@@ -5,12 +6,26 @@ import { rankOpportunities } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
 
+type StudentDashboardView = "overview" | "incoming" | "matches" | "forms" | "ranked" | "history";
+
+const STUDENT_VIEW_LABELS: Record<StudentDashboardView, string> = {
+  overview: "Overview",
+  incoming: "Incoming Requests",
+  matches: "Your Matches",
+  forms: "Service Forms",
+  ranked: "Ranked Opportunities",
+  history: "Request History"
+};
+
 type StudentDashboardProps = {
-  searchParams: Promise<{ error?: string; success?: string; editProfile?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; editProfile?: string; view?: string }>;
 };
 
 export default async function StudentDashboardPage({ searchParams }: StudentDashboardProps) {
   const params = await searchParams;
+  const requestedView = params.view as StudentDashboardView | undefined;
+  const activeView: StudentDashboardView =
+    requestedView && requestedView in STUDENT_VIEW_LABELS ? requestedView : "overview";
   const showEditProfile = params.editProfile === "1";
   const user = await requireRole(UserRole.STUDENT);
 
@@ -67,54 +82,26 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
   const incomingRequests = requests.filter((req) => req.status === MatchRequestStatus.PENDING && req.initiatedBy === RequestInitiator.ORG);
   const outgoingRequests = requests.filter((req) => req.initiatedBy === RequestInitiator.STUDENT);
   const acceptedRequests = requests.filter((req) => req.status === MatchRequestStatus.ACCEPTED);
+  const completedForms = acceptedRequests.filter((req) => req.serviceHourForm);
   const selectedSkills = new Set(student.skills.map((entry) => entry.skill.name.toLowerCase()));
+  const editProfileHref = activeView === "overview" ? "/dashboard/student?editProfile=1" : `/dashboard/student?view=${activeView}&editProfile=1`;
+  const closeProfileHref = activeView === "overview" ? "/dashboard/student" : `/dashboard/student?view=${activeView}`;
+  const viewHref = (view: StudentDashboardView) => (view === "overview" ? "/dashboard/student" : `/dashboard/student?view=${view}`);
+  const tabBaseClass =
+    "rounded-full px-4 py-2 text-sm font-medium transition";
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
-      <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-        <aside className="self-start rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm lg:sticky lg:top-24">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-500">Student Workspace</p>
-          <h2 className="mt-2 text-lg font-semibold text-slate-900">{student.fullName}</h2>
-          <p className="mt-1 text-sm text-slate-700">Track requests, contact matches, and download verified forms.</p>
-
-          <dl className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Incoming</dt>
-              <dd className="text-base font-semibold text-slate-900">{incomingRequests.length}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Accepted</dt>
-              <dd className="text-base font-semibold text-slate-900">{acceptedRequests.length}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Ranked</dt>
-              <dd className="text-base font-semibold text-slate-900">{ranked.length}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Forms</dt>
-              <dd className="text-base font-semibold text-slate-900">{acceptedRequests.filter((req) => req.serviceHourForm).length}</dd>
-            </div>
-          </dl>
-
-          <nav className="mt-5 space-y-1 text-sm">
-            <a href="#student-overview" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Overview</a>
-            <a href="#student-incoming" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Incoming Requests</a>
-            <a href="#student-matches" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Your Matches</a>
-            <a href="#student-forms" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Service Forms</a>
-            <a href="#student-ranked" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Ranked Opportunities</a>
-            <a href="#student-history" className="block rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Request History</a>
-          </nav>
-        </aside>
-
-        <div className="space-y-6">
-      <section id="student-overview" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="space-y-6">
+      <section className="relative overflow-hidden rounded-3xl border border-brand-700/20 bg-white/95 p-6 shadow-sm sm:p-8">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-gradient-to-br from-brand-50 to-transparent" />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold text-slate-900">Student Dashboard</h1>
-          <a href="/dashboard/student?editProfile=1" className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+          <a href={editProfileHref} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
             Edit Profile
           </a>
         </div>
-        <p className="mt-2 text-sm text-slate-700">Welcome, {student.fullName}. Send match requests and manage responses here.</p>
+        <p className="mt-2 text-sm text-slate-700">Welcome, {student.fullName}. Track requests, contact matches, and download verified forms.</p>
         <div className="mt-4 grid gap-2 text-sm text-slate-700 md:grid-cols-2">
           <p>Email: {user.email}</p>
           <p>School: {student.school || "Not provided"}</p>
@@ -125,12 +112,47 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         {params.success ? <p className="mt-3 rounded-md bg-green-50 p-2 text-sm text-green-700">{params.success}</p> : null}
       </section>
 
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Link href={viewHref("incoming")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Incoming</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{incomingRequests.length}</p>
+        </Link>
+        <Link href={viewHref("matches")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Accepted</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{acceptedRequests.length}</p>
+        </Link>
+        <Link href={viewHref("ranked")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Ranked</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{ranked.length}</p>
+        </Link>
+        <Link href={viewHref("forms")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Forms</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{completedForms.length}</p>
+        </Link>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+        <nav className="flex flex-wrap gap-2">
+          {(Object.keys(STUDENT_VIEW_LABELS) as StudentDashboardView[]).map((view) => (
+            <Link
+              key={view}
+              href={viewHref(view)}
+              className={`${tabBaseClass} ${
+                activeView === view ? "bg-brand-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              {STUDENT_VIEW_LABELS[view]}
+            </Link>
+          ))}
+        </nav>
+      </section>
+
       {showEditProfile ? (
         <section className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
           <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-xl font-semibold text-slate-900">Edit Your Profile</h2>
-              <a href="/dashboard/student" className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-200">
+              <a href={closeProfileHref} className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-200">
                 Close
               </a>
             </div>
@@ -216,7 +238,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         </section>
       ) : null}
 
-      <section id="student-incoming" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      {activeView === "incoming" ? (
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Incoming Match Requests</h2>
         <div className="mt-4 grid gap-3">
           {incomingRequests.length === 0 ? (
@@ -232,7 +255,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
                   <form action="/api/match-requests/respond" method="post">
                     <input type="hidden" name="requestId" value={req.id} />
                     <input type="hidden" name="action" value="accept" />
-                    <input type="hidden" name="redirectTo" value="/dashboard/student" />
+                    <input type="hidden" name="redirectTo" value="/dashboard/student?view=incoming" />
                     <button type="submit" className="rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500">
                       Accept
                     </button>
@@ -240,7 +263,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
                   <form action="/api/match-requests/respond" method="post">
                     <input type="hidden" name="requestId" value={req.id} />
                     <input type="hidden" name="action" value="reject" />
-                    <input type="hidden" name="redirectTo" value="/dashboard/student" />
+                    <input type="hidden" name="redirectTo" value="/dashboard/student?view=incoming" />
                     <button type="submit" className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-200">
                       Reject
                     </button>
@@ -251,8 +274,10 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           )}
         </div>
       </section>
+      ) : null}
 
-      <section id="student-matches" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      {activeView === "matches" ? (
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Your Matches</h2>
         <div className="mt-4 grid gap-3">
           {acceptedRequests.length === 0 ? (
@@ -274,16 +299,16 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           )}
         </div>
       </section>
+      ) : null}
 
-      <section id="student-forms" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      {activeView === "forms" ? (
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Filled Service Hour Forms</h2>
         <div className="mt-4 grid gap-3">
-          {acceptedRequests.filter((req) => req.serviceHourForm).length === 0 ? (
+          {completedForms.length === 0 ? (
             <p className="text-sm text-slate-700">No filled service hour forms yet.</p>
           ) : (
-            acceptedRequests
-              .filter((req) => req.serviceHourForm)
-              .map((req) => (
+            completedForms.map((req) => (
                 <article key={req.id} className="rounded-lg border border-slate-200 p-4">
                   <p className="font-medium text-slate-900">{req.opportunity.title}</p>
                   <p className="mt-1 text-sm text-slate-700">Hours: {req.serviceHourForm?.hoursCompleted ?? "N/A"}</p>
@@ -302,9 +327,12 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           )}
         </div>
       </section>
+      ) : null}
 
-      <section id="student-ranked" className="grid gap-4">
+      {activeView === "ranked" ? (
+      <section className="grid gap-4">
         <h2 className="text-xl font-semibold text-slate-900">Ranked Opportunities</h2>
+        {ranked.length === 0 ? <p className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-700 shadow-sm">No opportunities available right now.</p> : null}
         {ranked.map((match) => {
           const existingRequest = requestByOpportunity.get(match.opportunityId);
           const acceptedRequest = acceptedByOpportunity.get(match.opportunityId);
@@ -335,7 +363,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
               {canSend ? (
                 <form action="/api/match-requests/create" method="post" className="mt-3 flex flex-col gap-2">
                   <input type="hidden" name="opportunityId" value={match.opportunityId} />
-                  <input type="hidden" name="redirectTo" value="/dashboard/student" />
+                  <input type="hidden" name="redirectTo" value="/dashboard/student?view=ranked" />
                   <input
                     name="message"
                     placeholder="Optional message to organization"
@@ -350,8 +378,10 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           );
         })}
       </section>
+      ) : null}
 
-      <section id="student-history" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      {activeView === "history" ? (
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Your Request History</h2>
         <div className="mt-4 grid gap-2 text-sm text-slate-700">
           {outgoingRequests.length === 0 ? (
@@ -365,7 +395,30 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           )}
         </div>
       </section>
+      ) : null}
+
+      {activeView === "overview" ? (
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900">Overview</h2>
+        <p className="mt-2 text-sm text-slate-700">
+          Use the tabs above to switch between incoming requests, active matches, verified forms, ranked opportunities, and your request history.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Link href={viewHref("incoming")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
+            Review incoming match requests and respond quickly.
+          </Link>
+          <Link href={viewHref("ranked")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
+            Explore ranked opportunities and send match requests.
+          </Link>
+          <Link href={viewHref("matches")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
+            View accepted matches and direct organization contact info.
+          </Link>
+          <Link href={viewHref("forms")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
+            Download completed NHS service forms.
+          </Link>
         </div>
+      </section>
+      ) : null}
       </div>
     </main>
   );
