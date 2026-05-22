@@ -177,6 +177,9 @@ model MatchRequest {
   message         String?
   createdAt       DateTime           @default(now())
   respondedAt     DateTime?
+  completedAt     DateTime?
+  hoursCompleted  Float?
+  completionNotes String?
   student         StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   orgProfile      OrgProfile         @relation(fields: [orgProfileId], references: [id], onDelete: Cascade)
   opportunity     Opportunity        @relation(fields: [opportunityId], references: [id], onDelete: Cascade)

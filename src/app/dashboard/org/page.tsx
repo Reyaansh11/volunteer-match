@@ -3,7 +3,6 @@ import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { AvailabilityPicker } from "@/components/availability-picker";
 import { OrgOnboardingGuide } from "@/components/org-onboarding-guide";
-import { SignaturePad } from "@/components/signature-pad";
 import { COMMITMENT_OPTIONS, SKILL_OPTIONS, SUPERVISOR_TITLE_OPTIONS } from "@/lib/form-options";
 import { rankStudentsForOpportunity } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
@@ -17,7 +16,7 @@ const ORG_VIEW_LABELS: Record<OrgDashboardView, string> = {
   post: "Post Opportunity",
   opportunities: "Your Opportunities",
   ranked: "Ranked Students",
-  accepted: "Accepted & Forms"
+  accepted: "Accepted & Completion"
 };
 
 type OrgDashboardProps = {
@@ -49,7 +48,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
           orgProfile: true,
           matchRequests: {
             include: {
-              serviceHourForm: true
+              studentReview: true
             }
           }
         },
@@ -100,7 +99,6 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         }
       },
       opportunity: true,
-      serviceHourForm: true,
       studentReview: true
     },
     orderBy: {
@@ -508,7 +506,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
 
         {activeView === "accepted" ? (
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-900">Accepted Matches and Service Forms</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Accepted Matches and Completion Log</h2>
             <div className="mt-4 grid gap-4">
               {acceptedRequests.length === 0 ? (
                 <p className="text-sm text-slate-700">No accepted matches yet.</p>
@@ -548,50 +546,27 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                       </form>
                     )}
 
-                    {req.serviceHourForm ? (
-                      <>
-                        <p className="mt-2 text-sm text-green-700">Service hour form filled.</p>
-                        <a
-                          href={`/api/service-hours/download/${req.serviceHourForm.id}`}
-                          className="mt-2 inline-block rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500"
-                        >
-                          Download NHS PDF
-                        </a>
-                        <pre className="mt-2 whitespace-pre-wrap rounded-md bg-slate-50 p-3 text-xs text-slate-700">{req.serviceHourForm.generatedText}</pre>
-                      </>
+                    {req.completedAt ? (
+                      <div className="mt-3 rounded-md border border-green-200 bg-green-50 p-3">
+                        <p className="text-sm font-medium text-green-800">Task confirmed complete</p>
+                        <p className="mt-1 text-sm text-green-800">Hours logged: {req.hoursCompleted ?? 0}</p>
+                        <p className="mt-1 text-sm text-green-800">Completed on: {new Date(req.completedAt).toLocaleDateString()}</p>
+                        {req.completionNotes ? <p className="mt-1 text-sm text-green-800">Notes: {req.completionNotes}</p> : null}
+                      </div>
                     ) : (
-                      <form action="/api/service-hours/fill" method="post" className="mt-3 grid gap-2 md:grid-cols-3">
-                        <input type="hidden" name="matchRequestId" value={req.id} />
+                      <form action="/api/match-requests/complete" method="post" className="mt-3 grid gap-2 md:grid-cols-2">
+                        <input type="hidden" name="requestId" value={req.id} />
                         <input type="hidden" name="redirectTo" value={buildOrgHref("accepted")} />
                         <label className="text-sm font-medium text-slate-700">
-                          Hours Completed
-                          <input name="hoursCompleted" type="number" step="0.25" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                          Hours Completed *
+                          <input name="hoursCompleted" type="number" step="0.25" min="0.25" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
                         </label>
                         <label className="text-sm font-medium text-slate-700">
-                          Service Date
-                          <input name="serviceDate" type="date" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                          Completion Notes (optional)
+                          <input name="completionNotes" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
                         </label>
-                        <label className="text-sm font-medium text-slate-700">
-                          Supervisor Signature Date
-                          <input
-                            name="supervisorSignedAt"
-                            type="date"
-                            required
-                            defaultValue={new Date().toISOString().slice(0, 10)}
-                            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                          />
-                        </label>
-                        <label className="text-sm font-medium text-slate-700 md:col-span-3">
-                          Candidate Participation/Contribution *
-                          <textarea name="activityNotes" rows={2} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-                        </label>
-                        <label className="text-sm font-medium text-slate-700 md:col-span-3">
-                          Supervisor Signature *
-                          <SignaturePad inputName="supervisorSignature" />
-                          <p className="mt-2 text-xs text-slate-500">Signature is embedded only in the generated PDF and is not stored separately.</p>
-                        </label>
-                        <button type="submit" className="w-fit rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500">
-                          Fill Service Hour Form
+                        <button type="submit" className="w-fit rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500 md:col-span-2">
+                          Confirm Task Completed
                         </button>
                       </form>
                     )}
@@ -606,7 +581,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-slate-900">Overview</h2>
             <p className="mt-2 text-sm text-slate-700">
-              Use the tabs to switch between requests, opportunity management, student rankings, and service form workflows.
+              Use the tabs to switch between requests, opportunity management, student rankings, and completion logging.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <Link href={buildOrgHref("post")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
@@ -619,7 +594,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                 See ranked student matches for each opportunity.
               </Link>
               <Link href={buildOrgHref("accepted")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
-                Complete reviews and fill official service-hour forms.
+                Complete reviews and confirm completed service tasks.
               </Link>
             </div>
           </section>

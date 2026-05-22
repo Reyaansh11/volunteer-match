@@ -144,8 +144,18 @@ export function SignaturePad({ inputName }: SignaturePadProps) {
             event.currentTarget.releasePointerCapture(event.pointerId);
             end();
           }}
+          onMouseDown={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            start(event.clientX - rect.left, event.clientY - rect.top);
+          }}
+          onMouseMove={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            draw(event.clientX - rect.left, event.clientY - rect.top);
+          }}
+          onMouseUp={end}
           onPointerCancel={end}
           onPointerLeave={end}
+          onMouseLeave={end}
         />
       </div>
       <p className="text-[11px] text-slate-500">Signature captured: {signatureDataUrl ? "Yes" : "No"}</p>

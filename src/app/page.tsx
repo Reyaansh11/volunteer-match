@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 const highlights = [
   "Students build a profile with skills, availability, and service goals.",
   "Local programs post opportunities and connect after accepted match requests.",
-  "Service hours can be verified and exported as completed forms."
+  "Service completion is logged with verified hours for both students and organizations."
 ];
 
 export default async function Home() {
@@ -60,8 +60,8 @@ export default async function Home() {
               <Link href="/dashboard/student?view=matches" className="rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100">
                 View Your Matches
               </Link>
-              <Link href="/dashboard/student?view=forms" className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200">
-                Download Service Forms
+              <Link href="/dashboard/student?view=log" className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200">
+                View Service Log
               </Link>
             </div>
           ) : null}
@@ -74,7 +74,7 @@ export default async function Home() {
                 View Ranked Students
               </Link>
               <Link href="/dashboard/org?view=accepted" className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200">
-                Fill Service Forms
+                Confirm Completed Tasks
               </Link>
             </div>
           ) : null}
@@ -98,7 +98,7 @@ export default async function Home() {
           <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-900">For Programs</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-700">
-              Post opportunities, review ranked candidates, manage requests, and finalize service-hour forms with one workflow after participation is complete.
+              Post opportunities, review ranked candidates, manage requests, and confirm completed hours after participation is finished.
             </p>
           </article>
         </section>
@@ -113,7 +113,7 @@ export default async function Home() {
                 <li>Review personalized, ranked opportunities that fit your schedule and interests.</li>
                 <li>Send match requests and connect once organizations accept.</li>
                 <li>Complete your service and track your impact.</li>
-                <li>Download verified, ready-to-submit service-hour forms for NHS and similar programs.</li>
+                <li>Track your completed tasks and total verified service hours in one place.</li>
               </ol>
             </article>
             <article className="rounded-xl border border-slate-200 bg-slate-50 p-5">
@@ -123,7 +123,7 @@ export default async function Home() {
                 <li>Post opportunities and see students ranked by fit.</li>
                 <li>Send or respond to match requests with full control over approvals.</li>
                 <li>Coordinate service directly after a match is confirmed.</li>
-                <li>Auto-fill and issue digital service-hour verification forms after completion.</li>
+                <li>Confirm completed tasks and contribute verified service-hour totals for students.</li>
               </ol>
             </article>
           </div>

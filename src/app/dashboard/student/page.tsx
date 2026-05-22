@@ -6,13 +6,13 @@ import { rankOpportunities } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
 
-type StudentDashboardView = "overview" | "incoming" | "matches" | "forms" | "ranked" | "history";
+type StudentDashboardView = "overview" | "incoming" | "matches" | "log" | "ranked" | "history";
 
 const STUDENT_VIEW_LABELS: Record<StudentDashboardView, string> = {
   overview: "Overview",
   incoming: "Incoming Requests",
   matches: "Your Matches",
-  forms: "Service Forms",
+  log: "Service Log",
   ranked: "Ranked Opportunities",
   history: "Request History"
 };
@@ -65,8 +65,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
     },
     include: {
       opportunity: true,
-      orgProfile: true,
-      serviceHourForm: true
+      orgProfile: true
     },
     orderBy: {
       createdAt: "desc"
@@ -82,7 +81,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
   const incomingRequests = requests.filter((req) => req.status === MatchRequestStatus.PENDING && req.initiatedBy === RequestInitiator.ORG);
   const outgoingRequests = requests.filter((req) => req.initiatedBy === RequestInitiator.STUDENT);
   const acceptedRequests = requests.filter((req) => req.status === MatchRequestStatus.ACCEPTED);
-  const completedForms = acceptedRequests.filter((req) => req.serviceHourForm);
+  const completedLogs = acceptedRequests.filter((req) => req.completedAt);
+  const totalLoggedHours = completedLogs.reduce((sum, req) => sum + (req.hoursCompleted || 0), 0);
   const selectedSkills = new Set(student.skills.map((entry) => entry.skill.name.toLowerCase()));
   const editProfileHref = activeView === "overview" ? "/dashboard/student?editProfile=1" : `/dashboard/student?view=${activeView}&editProfile=1`;
   const closeProfileHref = activeView === "overview" ? "/dashboard/student" : `/dashboard/student?view=${activeView}`;
@@ -101,7 +101,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
             Edit Profile
           </a>
         </div>
-        <p className="mt-2 text-sm text-slate-700">Welcome, {student.fullName}. Track requests, contact matches, and download verified forms.</p>
+        <p className="mt-2 text-sm text-slate-700">Welcome, {student.fullName}. Track requests, contact matches, and monitor completed service hours.</p>
         <div className="mt-4 grid gap-2 text-sm text-slate-700 md:grid-cols-2">
           <p>Email: {user.email}</p>
           <p>School: {student.school || "Not provided"}</p>
@@ -125,9 +125,9 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           <p className="text-xs uppercase tracking-wide text-slate-500">Ranked</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900">{ranked.length}</p>
         </Link>
-        <Link href={viewHref("forms")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Forms</p>
-          <p className="mt-1 text-2xl font-semibold text-slate-900">{completedForms.length}</p>
+        <Link href={viewHref("log")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Completed</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{completedLogs.length}</p>
         </Link>
       </section>
 
@@ -301,27 +301,21 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
       </section>
       ) : null}
 
-      {activeView === "forms" ? (
+      {activeView === "log" ? (
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Filled Service Hour Forms</h2>
+        <h2 className="text-xl font-semibold text-slate-900">Service Log & Statistics</h2>
+        <p className="mt-2 text-sm text-slate-700">Total verified hours: <span className="font-semibold text-slate-900">{totalLoggedHours.toFixed(2)}</span></p>
         <div className="mt-4 grid gap-3">
-          {completedForms.length === 0 ? (
-            <p className="text-sm text-slate-700">No filled service hour forms yet.</p>
+          {completedLogs.length === 0 ? (
+            <p className="text-sm text-slate-700">No completed service entries yet.</p>
           ) : (
-            completedForms.map((req) => (
+            completedLogs.map((req) => (
                 <article key={req.id} className="rounded-lg border border-slate-200 p-4">
                   <p className="font-medium text-slate-900">{req.opportunity.title}</p>
-                  <p className="mt-1 text-sm text-slate-700">Hours: {req.serviceHourForm?.hoursCompleted ?? "N/A"}</p>
-                  <p className="mt-1 text-sm text-slate-700">
-                    Date: {req.serviceHourForm?.serviceDate ? new Date(req.serviceHourForm.serviceDate).toLocaleDateString() : "N/A"}
-                  </p>
-                  <a
-                    href={`/api/service-hours/download/${req.serviceHourForm?.id}`}
-                    className="mt-2 inline-block rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500"
-                  >
-                    Download NHS PDF
-                  </a>
-                  <pre className="mt-3 whitespace-pre-wrap rounded-md bg-slate-50 p-3 text-xs text-slate-700">{req.serviceHourForm?.generatedText}</pre>
+                  <p className="mt-1 text-sm text-slate-700">Organization: {req.orgProfile.organization}</p>
+                  <p className="mt-1 text-sm text-slate-700">Hours logged: {req.hoursCompleted ?? 0}</p>
+                  <p className="mt-1 text-sm text-slate-700">Completed on: {req.completedAt ? new Date(req.completedAt).toLocaleDateString() : "N/A"}</p>
+                  {req.completionNotes ? <p className="mt-1 text-sm text-slate-700">Notes: {req.completionNotes}</p> : null}
                 </article>
               ))
           )}
@@ -401,7 +395,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Overview</h2>
         <p className="mt-2 text-sm text-slate-700">
-          Use the tabs above to switch between incoming requests, active matches, verified forms, ranked opportunities, and your request history.
+          Use the tabs above to switch between incoming requests, active matches, your service log, ranked opportunities, and request history.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <Link href={viewHref("incoming")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
@@ -413,8 +407,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           <Link href={viewHref("matches")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
             View accepted matches and direct organization contact info.
           </Link>
-          <Link href={viewHref("forms")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
-            Download completed NHS service forms.
+          <Link href={viewHref("log")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
+            Review completed tasks and your total verified service hours.
           </Link>
         </div>
       </section>
