@@ -17,6 +17,8 @@ import { rankStudentsForOpportunity } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
 
+export const dynamic = "force-dynamic";
+
 type OrgDashboardView = "overview" | "incoming" | "post" | "opportunities" | "ranked" | "accepted";
 
 const ORG_VIEW_LABELS: Record<OrgDashboardView, string> = {

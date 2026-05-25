@@ -14,6 +14,8 @@ import { rankOpportunities } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
 
+export const dynamic = "force-dynamic";
+
 type StudentDashboardView = "overview" | "incoming" | "matches" | "log" | "records" | "ranked" | "history";
 
 const STUDENT_VIEW_LABELS: Record<StudentDashboardView, string> = {
