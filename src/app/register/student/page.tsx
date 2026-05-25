@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AvailabilityPicker } from "@/components/availability-picker";
-import { SKILL_OPTIONS } from "@/lib/form-options";
+import { DEFAULT_DISTANCE_UNIT, DISTANCE_UNIT_OPTIONS, SKILL_OPTIONS } from "@/lib/form-options";
 
 type StudentRegisterProps = {
   searchParams: Promise<{ error?: string }>;
@@ -70,8 +70,25 @@ export default async function StudentRegisterPage({ searchParams }: StudentRegis
           <AvailabilityPicker prefix="availability" required />
 
           <label className="text-sm font-medium text-slate-700">
-            Max Travel Distance (km)
-            <input name="maxDistanceKm" type="number" defaultValue={25} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+            Max Travel Distance
+            <input
+              name="maxDistance"
+              type="number"
+              min="1"
+              step="0.5"
+              defaultValue={15}
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Distance Unit
+            <select name="distanceUnit" defaultValue={DEFAULT_DISTANCE_UNIT} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+              {DISTANCE_UNIT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="md:col-span-2 text-sm font-medium text-slate-700">

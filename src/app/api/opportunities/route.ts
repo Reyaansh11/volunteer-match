@@ -19,7 +19,10 @@ export async function GET() {
       title: opportunity.title,
       organization: opportunity.orgProfile.organization,
       availability: opportunity.availability,
+      timeZone: opportunity.timeZone,
       requiredCommitment: opportunity.requiredCommitment,
+      radiusKm: opportunity.radiusKm,
+      radiusUnit: opportunity.radiusUnit,
       contactEmail: opportunity.contactEmail,
       contactPhone: opportunity.contactPhone,
       skills: opportunity.skills.map((entry) => ({

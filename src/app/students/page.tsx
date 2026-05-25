@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fromKilometers, normalizeDistanceUnit } from "@/lib/form-options";
 import { prisma } from "@/lib/prisma";
 
 export default async function StudentsPage() {
@@ -45,7 +46,9 @@ export default async function StudentsPage() {
                 </Link>
               </div>
               <p className="mt-2 text-sm text-slate-700">Email: {student.user.email}</p>
-              <p className="mt-2 text-sm text-slate-700">ZIP: {student.zipCode} | Max distance: {student.maxDistanceKm} km</p>
+              <p className="mt-2 text-sm text-slate-700">
+                ZIP: {student.zipCode} | Max distance: {fromKilometers(student.maxDistanceKm, normalizeDistanceUnit(student.distanceUnit, "km")).toFixed(1)} {normalizeDistanceUnit(student.distanceUnit, "km")}
+              </p>
               <p className="mt-2 text-sm text-slate-700">Availability: {student.availability}</p>
               <p className="mt-2 text-sm text-slate-700">Program: {student.programAffiliation || "Not provided"}</p>
               <p className="mt-2 text-sm text-slate-700">Parent consent: {student.parentConsent ? "Confirmed" : "Not confirmed"}</p>

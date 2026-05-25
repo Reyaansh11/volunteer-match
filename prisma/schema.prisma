@@ -56,6 +56,8 @@ model StudentProfile {
   lat                Float
   lng                Float
   maxDistanceKm      Float                @default(25)
+  distanceUnit       String               @default("km")
+  timeZone           String               @default("America/Phoenix")
   availability       String
   personalStatement  String?
   letterOfRecUrl     String?
@@ -104,9 +106,11 @@ model Opportunity {
   description        String
   requiredCommitment String
   availability       String
+  timeZone           String               @default("America/Phoenix")
   contactEmail       String
   contactPhone       String?
   radiusKm           Float                  @default(20)
+  radiusUnit         String                 @default("km")
   orgProfile         OrgProfile             @relation(fields: [orgProfileId], references: [id], onDelete: Cascade)
   skills             OpportunitySkill[]
   applications       Application[]

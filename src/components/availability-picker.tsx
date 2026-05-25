@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { TIME_OPTIONS } from "@/lib/form-options";
+import { DEFAULT_US_TIME_ZONE, TIME_OPTIONS, US_TIMEZONE_OPTIONS } from "@/lib/form-options";
 
 const DAYS = [
   { value: "Mon", label: "Monday" },
@@ -18,13 +18,17 @@ type AvailabilityPickerProps = {
   title?: string;
   description?: string;
   required?: boolean;
+  timeZoneName?: string;
+  defaultTimeZone?: string;
 };
 
 export function AvailabilityPicker({
   prefix,
   title = "Availability",
   description = "Choose any days you are available, then set start and end times for each selected day.",
-  required = false
+  required = false,
+  timeZoneName = `${prefix}TimeZone`,
+  defaultTimeZone = DEFAULT_US_TIME_ZONE
 }: AvailabilityPickerProps) {
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const selectedSet = useMemo(() => new Set(selectedDays), [selectedDays]);
@@ -41,6 +45,21 @@ export function AvailabilityPicker({
     <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
       <legend className="px-1 text-sm font-semibold text-slate-900">{title}{required ? " *" : ""}</legend>
       <p className="mb-3 text-xs text-slate-600">{description}</p>
+      <label className="mb-3 block text-sm font-medium text-slate-700">
+        Time Zone (US)
+        <select
+          name={timeZoneName}
+          defaultValue={defaultTimeZone}
+          required={required}
+          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+        >
+          {US_TIMEZONE_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
       <div className="grid gap-3">
         {DAYS.map((day) => {
           const checked = selectedSet.has(day.value);

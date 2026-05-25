@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AvailabilityPicker } from "@/components/availability-picker";
-import { COMMITMENT_OPTIONS, SKILL_OPTIONS, SUPERVISOR_TITLE_OPTIONS } from "@/lib/form-options";
+import { COMMITMENT_OPTIONS, DEFAULT_DISTANCE_UNIT, DISTANCE_UNIT_OPTIONS, SKILL_OPTIONS, SUPERVISOR_TITLE_OPTIONS } from "@/lib/form-options";
 
 type OrgRegisterProps = {
   searchParams: Promise<{ error?: string }>;
@@ -112,6 +112,27 @@ export default async function OrgRegisterPage({ searchParams }: OrgRegisterProps
           <label className="md:col-span-2 mt-[-0.25rem] flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" name="oneDayOpportunity" />
             This is a one-day opportunity (availability fit will not affect ranking).
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Opportunity Radius
+            <input
+              name="opportunityRadius"
+              type="number"
+              min="1"
+              step="0.5"
+              defaultValue={12}
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Radius Unit
+            <select name="opportunityRadiusUnit" defaultValue={DEFAULT_DISTANCE_UNIT} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+              {DISTANCE_UNIT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </label>
 
           <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">

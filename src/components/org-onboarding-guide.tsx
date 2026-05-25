@@ -16,8 +16,8 @@ const STEPS = [
     body: "Accept or reject incoming requests promptly. Once accepted, contact details unlock so coordination can start."
   },
   {
-    title: "Track Completion and Forms",
-    body: "After service is done, fill the service-hour form to generate verified records students can download."
+    title: "Track Completion and Hours",
+    body: "After service is done, confirm task completion with logged hours so students receive verified totals in their service log."
   },
   {
     title: "Submit Internal Reviews",

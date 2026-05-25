@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { SKILL_OPTIONS } from "@/lib/form-options";
+import {
+  DISTANCE_UNIT_OPTIONS,
+  fromKilometers,
+  formatTimeZoneLabel,
+  normalizeDistanceUnit,
+  normalizeUsTimeZone,
+  SKILL_OPTIONS,
+  US_TIMEZONE_OPTIONS
+} from "@/lib/form-options";
 import { rankOpportunities } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
@@ -83,6 +91,9 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
   const acceptedRequests = requests.filter((req) => req.status === MatchRequestStatus.ACCEPTED);
   const completedLogs = acceptedRequests.filter((req) => req.completedAt);
   const totalLoggedHours = completedLogs.reduce((sum, req) => sum + (req.hoursCompleted || 0), 0);
+  const studentDistanceUnit = normalizeDistanceUnit(student.distanceUnit, "km");
+  const studentTimeZone = normalizeUsTimeZone(student.timeZone);
+  const distanceDisplayValue = Number(fromKilometers(student.maxDistanceKm, studentDistanceUnit).toFixed(2));
   const selectedSkills = new Set(student.skills.map((entry) => entry.skill.name.toLowerCase()));
   const editProfileHref = activeView === "overview" ? "/dashboard/student?editProfile=1" : `/dashboard/student?view=${activeView}&editProfile=1`;
   const closeProfileHref = activeView === "overview" ? "/dashboard/student" : `/dashboard/student?view=${activeView}`;
@@ -122,7 +133,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           <p className="mt-1 text-2xl font-semibold text-slate-900">{acceptedRequests.length}</p>
         </Link>
         <Link href={viewHref("ranked")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Ranked</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">Ranked Opportunities</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900">{ranked.length}</p>
         </Link>
         <Link href={viewHref("log")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -186,15 +197,25 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
             <input name="programAffiliation" defaultValue={student.programAffiliation || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
           <label className="text-sm font-medium text-slate-700">
-            Max Travel Distance (km)
+            Max Travel Distance
             <input
-              name="maxDistanceKm"
+              name="maxDistance"
               type="number"
-              step="1"
+              step="0.5"
               min="1"
-              defaultValue={student.maxDistanceKm}
+              defaultValue={distanceDisplayValue}
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
             />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Distance Unit
+            <select name="distanceUnit" defaultValue={studentDistanceUnit} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+              {DISTANCE_UNIT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="md:col-span-2 text-sm font-medium text-slate-700">
             Personal Statement
@@ -207,6 +228,16 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           <label className="md:col-span-2 text-sm font-medium text-slate-700">
             Availability / Schedule *
             <textarea name="availability" rows={2} defaultValue={student.availability} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="md:col-span-2 text-sm font-medium text-slate-700">
+            Availability Time Zone (US)
+            <select name="availabilityTimeZone" defaultValue={studentTimeZone} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+              {US_TIMEZONE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </label>
 
           <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
@@ -337,9 +368,11 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
               <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Rank #{match.rank}</p>
               <h2 className="mt-1 text-lg font-semibold text-slate-900">{match.title}</h2>
               <p className="mt-1 text-sm text-slate-700">{match.organization}</p>
-              <p className="mt-2 text-sm text-slate-700">Time needed: {match.availability}</p>
+              <p className="mt-2 text-sm text-slate-700">Time needed: {match.availability} ({formatTimeZoneLabel(match.timeZone)})</p>
               <p className="mt-2 text-sm text-slate-700">Commitment: {match.requiredCommitment}</p>
-              <p className="mt-2 text-sm text-slate-700">Distance: {match.distanceKm} km</p>
+              <p className="mt-2 text-sm text-slate-700">
+                Distance: {fromKilometers(match.distanceKm, studentDistanceUnit).toFixed(1)} {studentDistanceUnit}
+              </p>
               <p className="mt-2 text-sm text-slate-700">Matched skills: {match.skillsMatched.join(", ") || "None"}</p>
               <p className="mt-2 text-sm text-slate-700">Missing required skills: {match.skillsMissing.join(", ") || "None"}</p>
 

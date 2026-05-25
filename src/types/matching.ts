@@ -11,6 +11,7 @@ export type RankedOpportunity = {
   organization: string;
   requiredCommitment: string;
   availability: string;
+  timeZone: string;
   contactEmail: string;
   contactPhone: string | null;
   distanceKm: number;
@@ -33,6 +34,7 @@ export type RankedStudent = {
   rank: number;
   distanceKm: number;
   availability: string;
+  timeZone: string;
   skillsMatched: string[];
   skillsMissing: string[];
 };

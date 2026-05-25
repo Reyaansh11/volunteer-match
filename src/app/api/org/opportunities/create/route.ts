@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildAvailabilityFromForm, getCurrentUser, parseSkillsFromForm, requireSameOrigin, resolveCommitmentFromForm } from "@/lib/auth";
+import { normalizeDistanceUnit, normalizeUsTimeZone, toKilometers } from "@/lib/form-options";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -17,7 +18,9 @@ export async function POST(request: Request) {
   const description = String(formData.get("description") || "").trim();
   const requiredCommitment = resolveCommitmentFromForm(formData, "requiredCommitmentPreset", "requiredCommitmentCustom", "requiredCommitment");
   const availability = buildAvailabilityFromForm(formData, "availability", "availability");
-  const radiusKm = Number(formData.get("radiusKm") || 20);
+  const radius = Number(formData.get("radius") || 12);
+  const radiusUnit = normalizeDistanceUnit(String(formData.get("radiusUnit") || ""));
+  const timeZone = normalizeUsTimeZone(String(formData.get("availabilityTimeZone") || ""));
   const oneDayOpportunity = formData.get("oneDayOpportunity") === "on";
   const normalizedCommitment =
     oneDayOpportunity && requiredCommitment ? "One-time event" : requiredCommitment;
@@ -36,7 +39,9 @@ export async function POST(request: Request) {
       description,
       requiredCommitment: normalizedCommitment,
       availability,
-      radiusKm: Number.isFinite(radiusKm) ? radiusKm : 20,
+      timeZone,
+      radiusKm: Number.isFinite(radius) ? toKilometers(radius, radiusUnit) : toKilometers(12, radiusUnit),
+      radiusUnit,
       contactEmail,
       contactPhone: contactPhone || null
     }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatTimeZoneLabel, fromKilometers, normalizeDistanceUnit } from "@/lib/form-options";
 import { prisma } from "@/lib/prisma";
 
 export default async function OpportunitiesPage() {
@@ -45,7 +46,10 @@ export default async function OpportunitiesPage() {
               <p className="mt-1 text-sm text-slate-600">{opportunity.orgProfile.organization}</p>
               <p className="mt-3 text-sm text-slate-700">{opportunity.description}</p>
               <p className="mt-2 text-sm text-slate-700">Commitment: {opportunity.requiredCommitment}</p>
-              <p className="mt-2 text-sm text-slate-700">Availability: {opportunity.availability}</p>
+              <p className="mt-2 text-sm text-slate-700">Availability: {opportunity.availability} ({formatTimeZoneLabel(opportunity.timeZone)})</p>
+              <p className="mt-2 text-sm text-slate-700">
+                Radius: {fromKilometers(opportunity.radiusKm, normalizeDistanceUnit(opportunity.radiusUnit, "km")).toFixed(1)} {normalizeDistanceUnit(opportunity.radiusUnit, "km")}
+              </p>
               <p className="mt-2 text-sm text-slate-700">Contact details are shared after an accepted match request.</p>
               <p className="mt-2 text-sm text-slate-700">
                 Skills needed: {opportunity.skills.map((s: any) => `${s.skill.name}${s.required ? " (required)" : ""}`).join(", ") || "None"}

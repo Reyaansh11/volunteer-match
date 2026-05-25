@@ -3,7 +3,16 @@ import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { AvailabilityPicker } from "@/components/availability-picker";
 import { OrgOnboardingGuide } from "@/components/org-onboarding-guide";
-import { COMMITMENT_OPTIONS, SKILL_OPTIONS, SUPERVISOR_TITLE_OPTIONS } from "@/lib/form-options";
+import {
+  COMMITMENT_OPTIONS,
+  DEFAULT_DISTANCE_UNIT,
+  DISTANCE_UNIT_OPTIONS,
+  formatTimeZoneLabel,
+  fromKilometers,
+  normalizeDistanceUnit,
+  SKILL_OPTIONS,
+  SUPERVISOR_TITLE_OPTIONS
+} from "@/lib/form-options";
 import { rankStudentsForOpportunity } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
@@ -65,6 +74,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
 
   const selectedOpportunityId = Number(params.opportunityId || org.opportunities[0]?.id || 0);
   const selectedOpportunity = org.opportunities.find((opp) => opp.id === selectedOpportunityId) || org.opportunities[0] || null;
+  const selectedRadiusUnit = normalizeDistanceUnit(selectedOpportunity?.radiusUnit, "km");
 
   const students = await prisma.studentProfile.findMany({
     include: {
@@ -362,8 +372,25 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
               </label>
 
               <label className="text-sm font-medium text-slate-700">
-                Radius (km)
-                <input name="radiusKm" type="number" defaultValue={20} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                Radius
+                <input
+                  name="radius"
+                  type="number"
+                  min="1"
+                  step="0.5"
+                  defaultValue={12}
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                />
+              </label>
+              <label className="text-sm font-medium text-slate-700">
+                Radius Unit
+                <select name="radiusUnit" defaultValue={DEFAULT_DISTANCE_UNIT} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                  {DISTANCE_UNIT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className="text-sm font-medium text-slate-700">
                 Contact Email *
@@ -419,8 +446,11 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
               <article className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <p className="font-medium text-slate-900">{selectedOpportunity.title}</p>
                 <p className="mt-1 text-sm text-slate-700">{selectedOpportunity.description}</p>
-                <p className="mt-1 text-sm text-slate-700">Needed schedule: {selectedOpportunity.availability}</p>
+                <p className="mt-1 text-sm text-slate-700">Needed schedule: {selectedOpportunity.availability} ({formatTimeZoneLabel(selectedOpportunity.timeZone)})</p>
                 <p className="mt-1 text-sm text-slate-700">Commitment: {selectedOpportunity.requiredCommitment}</p>
+                <p className="mt-1 text-sm text-slate-700">
+                  Radius: {fromKilometers(selectedOpportunity.radiusKm, selectedRadiusUnit).toFixed(1)} {selectedRadiusUnit}
+                </p>
               </article>
             ) : null}
           </section>
@@ -476,8 +506,10 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                           "Not provided"
                         )}
                       </p>
-                      <p className="mt-1 text-sm text-slate-700">Distance: {student.distanceKm} km</p>
-                      <p className="mt-1 text-sm text-slate-700">Availability: {student.availability}</p>
+                      <p className="mt-1 text-sm text-slate-700">
+                        Distance: {fromKilometers(student.distanceKm, selectedRadiusUnit).toFixed(1)} {selectedRadiusUnit}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-700">Availability: {student.availability} ({formatTimeZoneLabel(student.timeZone)})</p>
                       <p className="mt-1 text-sm text-slate-700">Matched skills: {student.skillsMatched.join(", ") || "None"}</p>
 
                       {status ? <p className="mt-2 text-sm text-slate-700">Request status: {status}</p> : null}

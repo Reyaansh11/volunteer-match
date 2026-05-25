@@ -114,6 +114,7 @@ export function rankOpportunities(student: StudentWithSkills, opportunities: Opp
       organization: opportunity.orgProfile.organization,
       requiredCommitment: opportunity.requiredCommitment,
       availability: opportunity.availability,
+      timeZone: opportunity.timeZone,
       contactEmail: opportunity.contactEmail,
       contactPhone: opportunity.contactPhone,
       distanceKm: round(distanceKm),
@@ -176,6 +177,7 @@ export function rankStudentsForOpportunity(
       rank: 0,
       distanceKm: round(distanceKm),
       availability: student.availability,
+      timeZone: student.timeZone,
       skillsMatched: opportunitySkills.filter((name) => studentSkills.has(name)),
       skillsMissing: requiredSkills.filter((name) => !studentSkills.has(name)),
       totalScore
@@ -197,6 +199,7 @@ export function rankStudentsForOpportunity(
       rank: index + 1,
       distanceKm: item.distanceKm,
       availability: item.availability,
+      timeZone: item.timeZone,
       skillsMatched: item.skillsMatched,
       skillsMissing: item.skillsMissing
     }));

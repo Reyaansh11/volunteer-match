@@ -24,6 +24,49 @@ export const SKILL_OPTIONS = [
   "fundraising"
 ] as const;
 
+export const DEFAULT_US_TIME_ZONE = "America/Phoenix" as const;
+
+export const US_TIMEZONE_OPTIONS = [
+  { value: "America/Phoenix", label: "Mountain Time (Arizona)" },
+  { value: "America/Denver", label: "Mountain Time" },
+  { value: "America/Los_Angeles", label: "Pacific Time" },
+  { value: "America/Chicago", label: "Central Time" },
+  { value: "America/New_York", label: "Eastern Time" },
+  { value: "America/Anchorage", label: "Alaska Time" },
+  { value: "Pacific/Honolulu", label: "Hawaii Time" }
+] as const;
+
+export const DEFAULT_DISTANCE_UNIT = "mi" as const;
+export const DISTANCE_UNIT_OPTIONS = [
+  { value: "mi", label: "Miles (mi)" },
+  { value: "km", label: "Kilometers (km)" }
+] as const;
+
+export type DistanceUnit = (typeof DISTANCE_UNIT_OPTIONS)[number]["value"];
+
+const DISTANCE_UNIT_SET = new Set<DistanceUnit>(DISTANCE_UNIT_OPTIONS.map((option) => option.value));
+const TIME_ZONE_SET = new Set<string>(US_TIMEZONE_OPTIONS.map((option) => option.value));
+
+export function normalizeDistanceUnit(input: string | null | undefined, fallback: DistanceUnit = DEFAULT_DISTANCE_UNIT): DistanceUnit {
+  return DISTANCE_UNIT_SET.has(input as DistanceUnit) ? (input as DistanceUnit) : fallback;
+}
+
+export function normalizeUsTimeZone(input: string | null | undefined, fallback = DEFAULT_US_TIME_ZONE): string {
+  return input && TIME_ZONE_SET.has(input) ? input : fallback;
+}
+
+export function toKilometers(value: number, unit: DistanceUnit) {
+  return unit === "mi" ? value * 1.60934 : value;
+}
+
+export function fromKilometers(valueKm: number, unit: DistanceUnit) {
+  return unit === "mi" ? valueKm / 1.60934 : valueKm;
+}
+
+export function formatTimeZoneLabel(timeZone: string) {
+  return US_TIMEZONE_OPTIONS.find((option) => option.value === timeZone)?.label || timeZone;
+}
+
 export const COMMITMENT_OPTIONS = [
   "1 hour/week",
   "2 hours/week",

@@ -11,6 +11,7 @@ import {
   requireSameOrigin,
   SESSION_COOKIE
 } from "@/lib/auth";
+import { normalizeDistanceUnit, normalizeUsTimeZone, toKilometers } from "@/lib/form-options";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithError(request: Request, message: string) {
@@ -44,6 +45,9 @@ export async function POST(request: Request) {
   const availability = buildAvailabilityFromForm(formData, "oppAvailability", "availability");
   const opportunitySkills = parseSkillsFromForm(formData, "opportunitySkills", "opportunitySkillsCustom");
   const oneDayOpportunity = formData.get("oneDayOpportunity") === "on";
+  const opportunityRadius = Number(formData.get("opportunityRadius") || 12);
+  const opportunityRadiusUnit = normalizeDistanceUnit(String(formData.get("opportunityRadiusUnit") || ""));
+  const opportunityTimeZone = normalizeUsTimeZone(String(formData.get("oppAvailabilityTimeZone") || ""));
   const normalizedCommitment =
     oneDayOpportunity && requiredCommitment ? "One-time event" : requiredCommitment;
 
@@ -98,8 +102,11 @@ export async function POST(request: Request) {
           description: opportunityDescription,
           requiredCommitment: normalizedCommitment,
           availability,
+          timeZone: opportunityTimeZone,
           contactEmail,
-          contactPhone: contactPhone || null
+          contactPhone: contactPhone || null,
+          radiusKm: Number.isFinite(opportunityRadius) ? toKilometers(opportunityRadius, opportunityRadiusUnit) : toKilometers(12, opportunityRadiusUnit),
+          radiusUnit: opportunityRadiusUnit
         }
       });
 

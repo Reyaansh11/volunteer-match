@@ -10,6 +10,7 @@ import {
   requireSameOrigin,
   SESSION_COOKIE
 } from "@/lib/auth";
+import { normalizeDistanceUnit, normalizeUsTimeZone, toKilometers } from "@/lib/form-options";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithError(request: Request, message: string) {
@@ -34,7 +35,9 @@ export async function POST(request: Request) {
   const personalStatement = String(formData.get("personalStatement") || "").trim();
   const letterOfRecUrl = String(formData.get("letterOfRecUrl") || "").trim();
   const programAffiliation = String(formData.get("programAffiliation") || "").trim();
-  const maxDistanceKm = Number(formData.get("maxDistanceKm") || 25);
+  const maxDistance = Number(formData.get("maxDistance") || 15);
+  const distanceUnit = normalizeDistanceUnit(String(formData.get("distanceUnit") || ""));
+  const timeZone = normalizeUsTimeZone(String(formData.get("availabilityTimeZone") || ""));
   const phone = String(formData.get("phone") || "").trim();
   const parsedSkills = parseSkillsFromForm(formData, "skills", "skillsCustom");
   const parentConsent = formData.get("parentConsent") === "on";
@@ -62,7 +65,9 @@ export async function POST(request: Request) {
             state: state || null,
             lat: latLng.lat,
             lng: latLng.lng,
-            maxDistanceKm: Number.isFinite(maxDistanceKm) ? maxDistanceKm : 25,
+            maxDistanceKm: Number.isFinite(maxDistance) ? toKilometers(maxDistance, distanceUnit) : toKilometers(15, distanceUnit),
+            distanceUnit,
+            timeZone,
             availability,
             personalStatement: personalStatement || null,
             letterOfRecUrl: letterOfRecUrl || null,
