@@ -11,13 +11,15 @@ const FROM_EMAIL = process.env.FROM_EMAIL ?? "onboarding@resend.dev";
 
 async function send(to: string, subject: string, html: string) {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[email] RESEND_API_KEY not set — skipping send");
+    console.error("[email] RESEND_API_KEY not set — skipping send");
     return;
   }
+  console.log(`[email] sending to=${to} subject="${subject}" from=${FROM_EMAIL}`);
   try {
-    await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
+    const result = await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
+    console.log("[email] send result", JSON.stringify(result));
   } catch (err) {
-    console.error("[email] send failed", err);
+    console.error("[email] send threw", err);
   }
 }
 
