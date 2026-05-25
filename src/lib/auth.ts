@@ -136,6 +136,14 @@ export function requireSameOrigin(request: Request): boolean {
   return false;
 }
 
+/** Prevent open-redirect attacks — only allow relative internal paths. */
+export function safeRedirectTo(input: string, fallback = "/"): string {
+  if (typeof input === "string" && input.startsWith("/") && !input.startsWith("//")) {
+    return input;
+  }
+  return fallback;
+}
+
 export function estimateLatLngFromZip(zipCode: string) {
   const safeZip = zipCode.replace(/\D/g, "").slice(0, 5);
   const numeric = Number(safeZip || "85000");

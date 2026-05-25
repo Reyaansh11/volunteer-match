@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rankOpportunities } from "@/lib/matching";
 
-export async function GET(_: Request, { params }: { params: Promise<{ studentId: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ studentId: string }> }) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ORG") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { studentId } = await params;
   const id = Number(studentId);
 

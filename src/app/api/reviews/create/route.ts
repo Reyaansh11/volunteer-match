@@ -1,6 +1,6 @@
 import { MatchRequestStatus, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getCurrentUser, requireSameOrigin } from "@/lib/auth";
+import { getCurrentUser, requireSameOrigin, safeRedirectTo } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithNotice(request: Request, redirectTo: string, key: "error" | "success", value: string) {
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   const matchRequestId = Number(formData.get("matchRequestId") || 0);
   const rating = Number(formData.get("rating") || 0);
   const feedback = String(formData.get("feedback") || "").trim();
-  const redirectTo = String(formData.get("redirectTo") || "").trim() || "/dashboard/org";
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") || "").trim(), "/dashboard/org");
 
   if (!Number.isFinite(matchRequestId) || matchRequestId <= 0) {
     return redirectWithNotice(request, redirectTo, "error", "Invalid match request.");

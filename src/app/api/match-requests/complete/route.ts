@@ -1,6 +1,6 @@
 import { MatchRequestStatus, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getCurrentUser, requireSameOrigin } from "@/lib/auth";
+import { getCurrentUser, requireSameOrigin, safeRedirectTo } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithNotice(request: Request, redirectTo: string, key: "error" | "success", value: string) {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const requestId = Number(formData.get("requestId") || 0);
-  const redirectTo = String(formData.get("redirectTo") || "").trim() || "/dashboard/org?view=accepted";
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") || "").trim(), "/dashboard/org?view=accepted");
   const hoursRaw = String(formData.get("hoursCompleted") || "").trim();
   const completionNotes = String(formData.get("completionNotes") || "").trim();
 

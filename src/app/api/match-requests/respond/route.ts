@@ -1,6 +1,6 @@
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getCurrentUser, requireSameOrigin } from "@/lib/auth";
+import { getCurrentUser, requireSameOrigin, safeRedirectTo } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithNotice(request: Request, redirectTo: string, key: "error" | "success", value: string) {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const requestId = Number(formData.get("requestId") || 0);
   const action = String(formData.get("action") || "").trim().toLowerCase();
-  const redirectTo = String(formData.get("redirectTo") || "").trim() || "/";
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") || "").trim());
 
   if (!Number.isFinite(requestId) || requestId <= 0) {
     return redirectWithNotice(request, redirectTo, "error", "Invalid request");

@@ -1,6 +1,6 @@
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getCurrentUser, requireSameOrigin } from "@/lib/auth";
+import { getCurrentUser, requireSameOrigin, safeRedirectTo } from "@/lib/auth";
 import { sendMatchRequestEmail } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
@@ -24,7 +24,11 @@ export async function POST(request: Request) {
   const opportunityId = Number(formData.get("opportunityId") || 0);
   const studentIdFromForm = Number(formData.get("studentId") || 0);
   const message = String(formData.get("message") || "").trim();
-  const redirectTo = String(formData.get("redirectTo") || "").trim() || "/";
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") || "").trim());
+
+  if (message.length > 1000) {
+    return redirectWithNotice(request, redirectTo, "error", "Message must be under 1000 characters");
+  }
 
   if (!Number.isFinite(opportunityId) || opportunityId <= 0) {
     return redirectWithNotice(request, redirectTo, "error", "Invalid opportunity");

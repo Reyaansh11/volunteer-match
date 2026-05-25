@@ -12,6 +12,9 @@ export async function POST(request: Request) {
   if (!user || user.role !== "ORG" || !user.org) {
     return NextResponse.redirect(new URL("/login", request.url), 303);
   }
+  if (user.org.status !== "APPROVED") {
+    return NextResponse.redirect(new URL("/dashboard/org?error=Your+organization+must+be+approved+before+posting+opportunities", request.url), 303);
+  }
 
   const formData = await request.formData();
   const title = String(formData.get("title") || "").trim();
@@ -31,6 +34,9 @@ export async function POST(request: Request) {
   if (!title || !description || !normalizedCommitment || !availability || !contactEmail) {
     return NextResponse.redirect(new URL("/dashboard/org?error=Missing+required+fields", request.url), 303);
   }
+  if (title.length > 200) return NextResponse.redirect(new URL("/dashboard/org?error=Title+must+be+under+200+characters", request.url), 303);
+  if (description.length > 5000) return NextResponse.redirect(new URL("/dashboard/org?error=Description+must+be+under+5000+characters", request.url), 303);
+  const filteredSkills = skills.filter((s) => s.length <= 100);
 
   const opportunity = await prisma.opportunity.create({
     data: {
@@ -47,7 +53,7 @@ export async function POST(request: Request) {
     }
   });
 
-  for (const skillName of skills) {
+  for (const skillName of filteredSkills) {
     const skill = await prisma.skill.upsert({
       where: { name: skillName },
       update: {},
