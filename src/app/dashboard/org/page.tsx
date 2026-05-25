@@ -425,45 +425,30 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         {activeView === "opportunities" ? (
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-slate-900">Your Opportunities</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 grid gap-4">
               {org.opportunities.length === 0 ? (
                 <p className="text-sm text-slate-700">No opportunities yet.</p>
               ) : (
                 org.opportunities.map((opp) => (
-                  <Link
-                    key={opp.id}
-                    href={buildOrgHref("opportunities", { opportunityId: opp.id })}
-                    className={`rounded-md px-3 py-1.5 text-sm ${
-                      selectedOpportunity?.id === opp.id ? "bg-brand-700 text-white" : "bg-slate-100 text-slate-800 hover:bg-slate-200"
-                    }`}
-                  >
-                    {opp.title}
-                  </Link>
+                  <article key={opp.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="font-medium text-slate-900">{opp.title}</p>
+                    <p className="mt-1 text-sm text-slate-700">{opp.description}</p>
+                    <p className="mt-1 text-sm text-slate-700">Needed schedule: {opp.availability} ({formatTimeZoneLabel(opp.timeZone)})</p>
+                    <p className="mt-1 text-sm text-slate-700">Commitment: {opp.requiredCommitment}</p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      Radius: {fromKilometers(opp.radiusKm, selectedRadiusUnit).toFixed(1)} {selectedRadiusUnit}
+                    </p>
+                    <form action="/api/org/opportunities/delete" method="post" className="mt-3">
+                      <input type="hidden" name="opportunityId" value={opp.id} />
+                      <input type="hidden" name="redirectTo" value="/dashboard/org?view=opportunities" />
+                      <button type="submit" className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-500">
+                        Remove Opportunity
+                      </button>
+                    </form>
+                  </article>
                 ))
               )}
             </div>
-            {selectedOpportunity ? (
-              <article className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <p className="font-medium text-slate-900">{selectedOpportunity.title}</p>
-                <p className="mt-1 text-sm text-slate-700">{selectedOpportunity.description}</p>
-                <p className="mt-1 text-sm text-slate-700">Needed schedule: {selectedOpportunity.availability} ({formatTimeZoneLabel(selectedOpportunity.timeZone)})</p>
-                <p className="mt-1 text-sm text-slate-700">Commitment: {selectedOpportunity.requiredCommitment}</p>
-                <p className="mt-1 text-sm text-slate-700">
-                  Radius: {fromKilometers(selectedOpportunity.radiusKm, selectedRadiusUnit).toFixed(1)} {selectedRadiusUnit}
-                </p>
-                <form
-                  action="/api/org/opportunities/delete"
-                  method="post"
-                  className="mt-3"
-                >
-                  <input type="hidden" name="opportunityId" value={selectedOpportunity.id} />
-                  <input type="hidden" name="redirectTo" value="/dashboard/org?view=opportunities" />
-                  <button type="submit" className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-500">
-                    Remove Opportunity
-                  </button>
-                </form>
-              </article>
-            ) : null}
           </section>
         ) : null}
 
