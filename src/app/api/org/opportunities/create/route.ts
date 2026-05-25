@@ -69,8 +69,7 @@ export async function POST(request: Request) {
     });
   }
 
-  // Fire-and-forget blast to matching students
-  sendOpportunityBlast(opportunity.id, filteredSkills, user.org.organization).catch(() => {});
+  await sendOpportunityBlast(opportunity.id, filteredSkills, user.org.organization);
 
   return NextResponse.redirect(new URL("/dashboard/org", request.url), 303);
 }
@@ -83,6 +82,7 @@ async function sendOpportunityBlast(opportunityId: number, skillNames: string[],
   if (!opp) return;
 
   const requiredSkillNames = opp.skills.map((s) => s.skill.name);
+  console.log(`[blast] opportunity=${opportunityId} skills=${requiredSkillNames.join(",")}`);
 
   // Find students who have at least one matching skill and haven't unsubscribed
   const students = await prisma.studentProfile.findMany({
@@ -96,6 +96,8 @@ async function sendOpportunityBlast(opportunityId: number, skillNames: string[],
       skills: { include: { skill: true } }
     }
   });
+
+  console.log(`[blast] found ${students.length} matching students`);
 
   for (const student of students) {
     // Basic distance check — skip if student is likely too far
