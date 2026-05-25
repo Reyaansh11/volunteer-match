@@ -158,7 +158,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
               <a href={openOnboardingHref} className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-200">
                 Onboarding Guide
               </a>
-              <a href={editProfileHref} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+              <a href={editProfileHref} className="rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500 transition-colors">
                 Edit Profile
               </a>
             </div>
@@ -571,7 +571,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                           Optional feedback
                           <textarea name="feedback" rows={2} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
                         </label>
-                        <button type="submit" className="w-fit rounded-md bg-slate-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+                        <button type="submit" className="w-fit rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500 transition-colors">
                           Save Review
                         </button>
                       </form>

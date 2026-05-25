@@ -109,7 +109,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-gradient-to-br from-brand-50 to-transparent" />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold text-slate-900">Student Dashboard</h1>
-          <a href={editProfileHref} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+          <a href={editProfileHref} className="rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500 transition-colors">
             Edit Profile
           </a>
         </div>
@@ -164,7 +164,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-xl font-semibold text-slate-900">Edit Your Profile</h2>
-              <a href={closeProfileHref} className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-200">
+              <a href={closeProfileHref} className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
                 Close
               </a>
             </div>

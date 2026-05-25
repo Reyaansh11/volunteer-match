@@ -3,20 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --bg: #f2f7f5;
-  --text: #101916;
-  --muted: #587067;
+  --bg: #f4faff;
+  --text: #001f2a;
+  --muted: #50606d;
+}
+
+/* Apply Hanken Grotesk to all heading elements automatically —
+   no need to add font-display classes to every page. */
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-hanken), 'Hanken Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+  }
 }
 
 body {
   color: var(--text);
+  /* Subtle green-tinted mesh gradient matching the Stitch landing design */
   background:
-    radial-gradient(circle at 15% -10%, #d8ece9 0%, rgba(216, 236, 233, 0) 42%),
-    radial-gradient(circle at 110% 0%, #dfece5 0%, rgba(223, 236, 229, 0) 37%),
-    linear-gradient(180deg, #f7fbf9 0%, var(--bg) 70%);
+    radial-gradient(circle at 15% -10%, rgba(163, 246, 156, 0.18) 0%, transparent 42%),
+    radial-gradient(circle at 110% 0%,  rgba(160, 242, 225, 0.14) 0%, transparent 37%),
+    linear-gradient(180deg, #f8fbff 0%, var(--bg) 70%);
   min-height: 100vh;
 }
 
+/* Selection highlight uses the light-green primary-fixed color */
 ::selection {
-  background: #2f7a7126;
+  background: rgba(163, 246, 156, 0.45);
 }
