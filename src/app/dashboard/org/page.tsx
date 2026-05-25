@@ -19,7 +19,7 @@ import { requireRole } from "@/lib/guards";
 
 export const dynamic = "force-dynamic";
 
-type OrgDashboardView = "overview" | "incoming" | "post" | "opportunities" | "ranked" | "accepted";
+type OrgDashboardView = "overview" | "incoming" | "post" | "opportunities" | "ranked" | "active-volunteers" | "match-history";
 
 const ORG_VIEW_LABELS: Record<OrgDashboardView, string> = {
   overview: "Overview",
@@ -27,7 +27,8 @@ const ORG_VIEW_LABELS: Record<OrgDashboardView, string> = {
   post: "Post Opportunity",
   opportunities: "Your Opportunities",
   ranked: "Ranked Students",
-  accepted: "Accepted & Completion"
+  "active-volunteers": "Active Volunteers",
+  "match-history": "Match History"
 };
 
 type OrgDashboardProps = {
@@ -123,6 +124,10 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
 
   const incomingRequests = requests.filter((req) => req.status === MatchRequestStatus.PENDING && req.initiatedBy === RequestInitiator.STUDENT);
   const acceptedRequests = requests.filter((req) => req.status === MatchRequestStatus.ACCEPTED);
+  // Active volunteers: accepted matches still needing log + review (either one missing)
+  const activeVolunteers = acceptedRequests.filter((req) => !(req.studentReview && req.completedAt));
+  // Match history: fully processed — both hours logged AND review submitted
+  const matchHistory = acceptedRequests.filter((req) => !!(req.studentReview && req.completedAt));
   const requestKeyToStatus = new Map(requests.map((req) => [`${req.opportunityId}:${req.studentId}`, req.status]));
 
   const buildOrgHref = (
@@ -188,9 +193,9 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
             <p className="text-xs uppercase tracking-wide text-slate-500">Incoming</p>
             <p className="mt-1 text-2xl font-semibold text-slate-900">{incomingRequests.length}</p>
           </Link>
-          <Link href={buildOrgHref("accepted")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Accepted</p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">{acceptedRequests.length}</p>
+          <Link href={buildOrgHref("active-volunteers")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Active Volunteers</p>
+            <p className="mt-1 text-2xl font-semibold text-slate-900">{activeVolunteers.length}</p>
           </Link>
           <Link href={buildOrgHref("ranked")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs uppercase tracking-wide text-slate-500">Ranked</p>
@@ -537,91 +542,214 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
           </section>
         ) : null}
 
-        {activeView === "accepted" ? (
+        {activeView === "active-volunteers" ? (
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-900">Accepted Matches and Completion Log</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Active Volunteers</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Accepted matches waiting for service to be logged and reviewed. Once both are submitted, the match moves to Match History.
+            </p>
             <p className="mt-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
-              You can now communicate directly with matched students via email — their address is shown on each card below.
+              You can communicate directly with matched students via email — their address is on each card below.
+            </p>
+            <div className="mt-4 grid gap-6">
+              {activeVolunteers.length === 0 ? (
+                <p className="text-sm text-slate-700">No active volunteers right now — all matches are in Match History.</p>
+              ) : (
+                activeVolunteers.map((req) => (
+                  <article key={req.id} className="rounded-xl border border-slate-200 overflow-hidden">
+                    {/* Card header */}
+                    <div className="bg-slate-50 px-5 py-4 border-b border-slate-200">
+                      <p className="font-semibold text-slate-900">{req.opportunity?.title ?? req.opportunityTitle ?? "Opportunity"}</p>
+                      <p className="mt-0.5 text-sm text-slate-600">
+                        {req.student.fullName} —{" "}
+                        <a href={`mailto:${req.student.user.email}`} className="text-brand-700 underline">
+                          {req.student.user.email}
+                        </a>
+                      </p>
+                      {req.message ? <p className="mt-1 text-xs text-slate-500">Message: {req.message}</p> : null}
+                    </div>
+
+                    <div className="p-5">
+                      {/* Legacy case: hours already logged separately, just need the review */}
+                      {req.completedAt && !req.studentReview ? (
+                        <>
+                          <div className="mb-4 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                            <p className="font-medium">Hours already logged</p>
+                            <p className="mt-0.5">{req.hoursCompleted} hrs · {req.serviceDate ? new Date(req.serviceDate).toLocaleDateString() : new Date(req.completedAt).toLocaleDateString()}</p>
+                            {req.completionNotes ? <p className="mt-0.5 text-xs">Notes: {req.completionNotes}</p> : null}
+                          </div>
+                          <form action="/api/match-requests/complete-and-review" method="post" className="grid gap-4">
+                            <input type="hidden" name="requestId" value={req.id} />
+                            <input type="hidden" name="redirectTo" value={buildOrgHref("active-volunteers")} />
+                            <fieldset>
+                              <legend className="text-sm font-semibold text-slate-700">Your Rating *</legend>
+                              <p className="mt-0.5 text-xs text-slate-500">Required — affects this student&apos;s future ranking on ServeConnect</p>
+                              <div className="mt-3 flex flex-wrap gap-3">
+                                {([1, 2, 3, 4, 5] as const).map((n) => {
+                                  const labels = ["", "Poor", "Fair", "Good", "Great", "Excellent"] as const;
+                                  return (
+                                    <label key={n} className="group flex flex-col items-center gap-1 cursor-pointer select-none">
+                                      <input type="radio" name="rating" value={String(n)} required className="peer sr-only" />
+                                      <span className="flex h-14 w-14 items-center justify-center rounded-xl border-2 border-slate-200 text-3xl text-slate-300 transition-colors group-hover:border-amber-300 group-hover:text-amber-300 peer-checked:border-amber-400 peer-checked:bg-amber-50 peer-checked:text-amber-500">
+                                        ★
+                                      </span>
+                                      <span className="text-xs text-slate-500">{n} · {labels[n]}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </fieldset>
+                            <label className="text-sm font-medium text-slate-700">
+                              Private note for student (optional)
+                              <p className="mt-0.5 text-xs font-normal text-slate-500">Sent only to the student — not on any printed form.</p>
+                              <textarea name="feedback" rows={2} placeholder="e.g. Great attitude, very reliable" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                            </label>
+                            <button type="submit" className="w-fit rounded-lg bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-500 transition-colors">
+                              Submit Review
+                            </button>
+                          </form>
+                        </>
+                      ) : !req.studentReview ? (
+                        /* Main case: combined log + review form */
+                        <form action="/api/match-requests/complete-and-review" method="post" className="grid gap-5">
+                          <input type="hidden" name="requestId" value={req.id} />
+                          <input type="hidden" name="redirectTo" value={buildOrgHref("active-volunteers")} />
+
+                          {/* Row 1: service details */}
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <label className="text-sm font-medium text-slate-700">
+                              Date of Service *
+                              <input name="serviceDate" type="date" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                            </label>
+                            <label className="text-sm font-medium text-slate-700">
+                              Hours Completed *
+                              <input name="hoursCompleted" type="number" step="0.25" min="0.25" max="24" required placeholder="e.g. 2.5" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                            </label>
+                          </div>
+
+                          {/* Row 2: star rating — same visual level as service details, not nested inside them */}
+                          <fieldset className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <legend className="px-1 text-sm font-semibold text-slate-800">Your Rating *</legend>
+                            <p className="mt-0.5 text-xs text-slate-500">Required — affects this student&apos;s future ranking on ServeConnect</p>
+                            <div className="mt-3 flex flex-wrap gap-3">
+                              {([1, 2, 3, 4, 5] as const).map((n) => {
+                                const labels = ["", "Poor", "Fair", "Good", "Great", "Excellent"] as const;
+                                return (
+                                  <label key={n} className="group flex flex-col items-center gap-1 cursor-pointer select-none">
+                                    <input type="radio" name="rating" value={String(n)} required className="peer sr-only" />
+                                    <span className="flex h-14 w-14 items-center justify-center rounded-xl border-2 border-slate-200 text-3xl text-slate-300 transition-colors group-hover:border-amber-300 group-hover:text-amber-300 peer-checked:border-amber-400 peer-checked:bg-amber-50 peer-checked:text-amber-500">
+                                      ★
+                                    </span>
+                                    <span className="text-xs text-slate-500">{n} · {labels[n]}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </fieldset>
+
+                          {/* Row 3: optional text fields */}
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <label className="text-sm font-medium text-slate-700">
+                              Private note for student (optional)
+                              <p className="mt-0.5 text-xs font-normal text-slate-500">Sent only to the student — not on any printed form.</p>
+                              <textarea name="feedback" rows={2} placeholder="e.g. Great attitude, very reliable" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                            </label>
+                            <label className="text-sm font-medium text-slate-700">
+                              Activity description for service record (optional)
+                              <p className="mt-0.5 text-xs font-normal text-slate-500">Appears on the printed form seen by the student and NHS advisor.</p>
+                              <textarea name="completionNotes" rows={2} placeholder="e.g. Assisted with meal prep and serving at the senior center" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                            </label>
+                          </div>
+
+                          <button type="submit" className="w-fit rounded-lg bg-brand-700 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-500 transition-colors">
+                            Confirm Service &amp; Submit Review
+                          </button>
+                        </form>
+                      ) : (
+                        /* Edge case: review exists but no completion — show completion-only form */
+                        <form action="/api/match-requests/complete" method="post" className="grid gap-3 md:grid-cols-2">
+                          <input type="hidden" name="requestId" value={req.id} />
+                          <input type="hidden" name="redirectTo" value={buildOrgHref("active-volunteers")} />
+                          <p className="md:col-span-2 text-sm text-slate-600 rounded-md bg-amber-50 border border-amber-200 px-3 py-2">
+                            Review already submitted. Please log the service hours to complete this match.
+                          </p>
+                          <label className="text-sm font-medium text-slate-700">
+                            Date of Service *
+                            <input name="serviceDate" type="date" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                          </label>
+                          <label className="text-sm font-medium text-slate-700">
+                            Hours Completed *
+                            <input name="hoursCompleted" type="number" step="0.25" min="0.25" max="24" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                          </label>
+                          <button type="submit" className="w-fit rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 md:col-span-2">
+                            Log Hours
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        ) : null}
+
+        {activeView === "match-history" ? (
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-semibold text-slate-900">Match History</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              All completed and reviewed matches. Service records are available for each entry below.
             </p>
             <div className="mt-4 grid gap-4">
-              {acceptedRequests.length === 0 ? (
-                <p className="text-sm text-slate-700">No accepted matches yet.</p>
+              {matchHistory.length === 0 ? (
+                <p className="text-sm text-slate-700">No completed matches yet.</p>
               ) : (
-                acceptedRequests.map((req) => (
-                  <article key={req.id} className="rounded-lg border border-slate-200 p-4">
-                    <p className="font-medium text-slate-900">{req.opportunity?.title ?? req.opportunityTitle ?? "Opportunity"}</p>
-                    <p className="mt-1 text-sm text-slate-700">
-                      Student: {req.student.fullName} — <a href={`mailto:${req.student.user.email}`} className="text-brand-700 underline">{req.student.user.email}</a>
-                    </p>
-                    <p className="mt-1 text-sm text-slate-700">Request message: {req.message || "No message"}</p>
-
-                    {req.studentReview ? (
-                      <p className="mt-2 text-sm text-slate-700">Review submitted for this student.</p>
-                    ) : (
-                      <form action="/api/reviews/create" method="post" className="mt-3 grid gap-2 rounded-md border border-slate-200 p-3">
-                        <input type="hidden" name="matchRequestId" value={req.id} />
-                        <input type="hidden" name="redirectTo" value={buildOrgHref("accepted")} />
-                        <label className="text-sm font-medium text-slate-700">
-                          Review this student (1-5) *
-                          <select name="rating" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
-                            <option value="">Select rating</option>
-                            <option value="5">5 - Excellent</option>
-                            <option value="4">4 - Strong</option>
-                            <option value="3">3 - Good</option>
-                            <option value="2">2 - Fair</option>
-                            <option value="1">1 - Needs improvement</option>
-                          </select>
-                        </label>
-                        <label className="text-sm font-medium text-slate-700">
-                          Private note for student (optional)
-                          <p className="mt-0.5 text-xs font-normal text-slate-500">Sent only to the student — does not appear on service records or printed forms.</p>
-                          <textarea name="feedback" rows={2} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-                        </label>
-                        <button type="submit" className="w-fit rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500 transition-colors">
-                          Save Review
-                        </button>
-                      </form>
-                    )}
-
-                    {req.completedAt ? (
-                      <div className="mt-3 rounded-md border border-green-200 bg-green-50 p-3">
-                        <p className="text-sm font-medium text-green-800">Task confirmed complete</p>
-                        <p className="mt-1 text-sm text-green-800">Hours logged: {req.hoursCompleted ?? 0}</p>
-                        <p className="mt-1 text-sm text-green-800">Completed on: {new Date(req.completedAt).toLocaleDateString()}</p>
-                        {req.completionNotes ? <p className="mt-1 text-sm text-green-800">Notes: {req.completionNotes}</p> : null}
-                        <Link
-                          href={`/service-form/${req.id}`}
-                          target="_blank"
-                          className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-500 transition-colors"
-                        >
-                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          View Service Record
-                        </Link>
+                matchHistory.map((req) => (
+                  <article key={req.id} className="rounded-xl border border-slate-200 overflow-hidden">
+                    <div className="bg-slate-50 px-5 py-4 border-b border-slate-200 flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">{req.opportunity?.title ?? req.opportunityTitle ?? "Opportunity"}</p>
+                        <p className="mt-0.5 text-sm text-slate-600">
+                          {req.student.fullName} —{" "}
+                          <a href={`mailto:${req.student.user.email}`} className="text-brand-700 underline">
+                            {req.student.user.email}
+                          </a>
+                        </p>
                       </div>
-                    ) : (
-                      <form action="/api/match-requests/complete" method="post" className="mt-3 grid gap-2 md:grid-cols-2">
-                        <input type="hidden" name="requestId" value={req.id} />
-                        <input type="hidden" name="redirectTo" value={buildOrgHref("accepted")} />
-                        <label className="text-sm font-medium text-slate-700">
-                          Date of Service *
-                          <input name="serviceDate" type="date" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-                        </label>
-                        <label className="text-sm font-medium text-slate-700">
-                          Hours Completed *
-                          <input name="hoursCompleted" type="number" step="0.25" min="0.25" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-                        </label>
-                        <label className="md:col-span-2 text-sm font-medium text-slate-700">
-                          Activity description for service record (optional)
-                          <p className="mt-0.5 text-xs font-normal text-slate-500">Appears on the printed service form visible to the student and their NHS advisor — keep it professional.</p>
-                          <input name="completionNotes" placeholder="Brief description of what the student did" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-                        </label>
-                        <button type="submit" className="w-fit rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500 md:col-span-2">
-                          Confirm Task Completed
-                        </button>
-                      </form>
-                    )}
+                      <Link
+                        href={`/service-form/${req.id}`}
+                        target="_blank"
+                        className="flex items-center gap-1.5 rounded-lg bg-brand-700 px-3 py-2 text-xs font-semibold text-white hover:bg-brand-500 transition-colors"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        View Service Record
+                      </Link>
+                    </div>
+                    <div className="px-5 py-4 grid gap-2">
+                      <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-700">
+                        <span>Hours: <span className="font-medium">{req.hoursCompleted ?? 0}</span></span>
+                        <span>Date: <span className="font-medium">{req.serviceDate ? new Date(req.serviceDate).toLocaleDateString() : req.completedAt ? new Date(req.completedAt).toLocaleDateString() : "—"}</span></span>
+                        <span>Confirmed: <span className="font-medium">{req.completedAt ? new Date(req.completedAt).toLocaleDateString() : "—"}</span></span>
+                      </div>
+                      {req.completionNotes ? (
+                        <p className="text-sm text-slate-600">Activity: {req.completionNotes}</p>
+                      ) : null}
+                      {req.studentReview ? (
+                        <div className="mt-1 flex items-center gap-3">
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span key={star} className={`text-xl ${star <= req.studentReview!.rating ? "text-amber-400" : "text-slate-200"}`}>★</span>
+                            ))}
+                          </div>
+                          <span className="text-sm text-slate-600">{req.studentReview.rating}/5</span>
+                          {req.studentReview.feedback ? (
+                            <span className="text-sm text-slate-500 italic">&ldquo;{req.studentReview.feedback}&rdquo;</span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
                   </article>
                 ))
               )}
@@ -645,8 +773,11 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
               <Link href={buildOrgHref("ranked")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
                 See ranked student matches for each opportunity.
               </Link>
-              <Link href={buildOrgHref("accepted")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
-                Complete reviews and confirm completed service tasks.
+              <Link href={buildOrgHref("active-volunteers")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
+                Log service hours and leave a review for your active volunteers.
+              </Link>
+              <Link href={buildOrgHref("match-history")} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 hover:bg-slate-100">
+                View completed match history and access past service records.
               </Link>
             </div>
           </section>

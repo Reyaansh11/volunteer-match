@@ -21,7 +21,7 @@ type StudentDashboardView = "overview" | "incoming" | "matches" | "log" | "recor
 const STUDENT_VIEW_LABELS: Record<StudentDashboardView, string> = {
   overview: "Overview",
   incoming: "Incoming Requests",
-  matches: "Your Matches",
+  matches: "Active Matches",
   log: "Service Log",
   records: "Service Records",
   ranked: "Ranked Opportunities",
@@ -94,6 +94,9 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
   const incomingRequests = requests.filter((req) => req.status === MatchRequestStatus.PENDING && req.initiatedBy === RequestInitiator.ORG);
   const outgoingRequests = requests.filter((req) => req.initiatedBy === RequestInitiator.STUDENT);
   const acceptedRequests = requests.filter((req) => req.status === MatchRequestStatus.ACCEPTED);
+  // Active matches: accepted but not yet reviewed by org — these are ongoing commitments
+  const activeMatches = acceptedRequests.filter((req) => !req.studentReview);
+  // Completed logs: any accepted request where hours have been recorded (for service log/records)
   const completedLogs = acceptedRequests.filter((req) => req.completedAt);
   const totalLoggedHours = completedLogs.reduce((sum, req) => sum + (req.hoursCompleted || 0), 0);
   const studentDistanceUnit = normalizeDistanceUnit(student.distanceUnit, "km");
@@ -134,8 +137,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           <p className="mt-1 text-2xl font-semibold text-slate-900">{incomingRequests.length}</p>
         </Link>
         <Link href={viewHref("matches")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Accepted</p>
-          <p className="mt-1 text-2xl font-semibold text-slate-900">{acceptedRequests.length}</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">Active Matches</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{activeMatches.length}</p>
         </Link>
         <Link href={viewHref("ranked")} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-slate-500">Ranked Opportunities</p>
@@ -323,17 +326,18 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
 
       {activeView === "matches" ? (
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Your Matches</h2>
-        {acceptedRequests.length > 0 ? (
+        <h2 className="text-xl font-semibold text-slate-900">Active Matches</h2>
+        <p className="mt-1 text-sm text-slate-500">Your current volunteer commitments. Once the organization logs your hours and submits a review, the match will appear in your Service Records.</p>
+        {activeMatches.length > 0 ? (
           <p className="mt-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
             You&apos;re matched! Reach out directly to the organization using the contact details on each card below.
           </p>
         ) : null}
         <div className="mt-4 grid gap-3">
-          {acceptedRequests.length === 0 ? (
-            <p className="text-sm text-slate-700">No accepted matches yet.</p>
+          {activeMatches.length === 0 ? (
+            <p className="text-sm text-slate-700">No active matches right now. Completed matches appear in your Service Records.</p>
           ) : (
-            acceptedRequests.map((req) => (
+            activeMatches.map((req) => (
               <article key={req.id} className="rounded-lg border border-slate-200 p-4">
                 <p className="font-medium text-slate-900">{req.opportunity?.title ?? req.opportunityTitle ?? "Opportunity"}</p>
                 <p className="mt-1 text-sm text-slate-700">Organization: {req.orgProfile.organization}</p>
