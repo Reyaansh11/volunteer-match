@@ -455,7 +455,6 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                   action="/api/org/opportunities/delete"
                   method="post"
                   className="mt-3"
-                  onSubmit={(e) => { if (!confirm("Remove this opportunity? This cannot be undone.")) e.preventDefault(); }}
                 >
                   <input type="hidden" name="opportunityId" value={selectedOpportunity.id} />
                   <input type="hidden" name="redirectTo" value="/dashboard/org?view=opportunities" />
