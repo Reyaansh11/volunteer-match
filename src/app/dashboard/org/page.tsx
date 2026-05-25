@@ -50,6 +50,9 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
     where: { id: user.org.id },
     include: {
       opportunities: {
+        where: {
+          archived: false
+        },
         include: {
           skills: {
             include: {

@@ -324,9 +324,11 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
       {activeView === "matches" ? (
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Your Matches</h2>
-        <p className="mt-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
-          You&apos;re matched! Reach out directly to the organization using the contact details on each card below.
-        </p>
+        {acceptedRequests.length > 0 ? (
+          <p className="mt-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
+            You&apos;re matched! Reach out directly to the organization using the contact details on each card below.
+          </p>
+        ) : null}
         <div className="mt-4 grid gap-3">
           {acceptedRequests.length === 0 ? (
             <p className="text-sm text-slate-700">No accepted matches yet.</p>
