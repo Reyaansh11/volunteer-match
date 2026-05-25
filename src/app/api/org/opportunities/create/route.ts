@@ -77,19 +77,26 @@ export async function POST(request: Request) {
 async function sendOpportunityBlast(opportunityId: number, skillNames: string[], orgName: string) {
   const opp = await prisma.opportunity.findUnique({
     where: { id: opportunityId },
-    include: { skills: { include: { skill: true } } }
+    include: {
+      skills: { include: { skill: true } },
+      orgProfile: true
+    }
   });
   if (!opp) return;
 
   const requiredSkillNames = opp.skills.map((s) => s.skill.name);
-  console.log(`[blast] opportunity=${opportunityId} skills=${requiredSkillNames.join(",")}`);
+  console.log(`[blast] opportunity=${opportunityId} orgLat=${opp.orgProfile.lat} orgLng=${opp.orgProfile.lng} skills=${requiredSkillNames.join(",")}`);
 
-  // Find students who have at least one matching skill and haven't unsubscribed
+  // If no skills defined, blast all non-unsubscribed students
+  const skillFilter = requiredSkillNames.length > 0
+    ? { skills: { some: { skill: { name: { in: requiredSkillNames } } } } }
+    : {};
+
   const students = await prisma.studentProfile.findMany({
     where: {
       emailUnsubscribed: false,
       unsubscribeToken: { not: null },
-      skills: { some: { skill: { name: { in: requiredSkillNames } } } }
+      ...skillFilter
     },
     include: {
       user: { select: { email: true } },
@@ -100,11 +107,13 @@ async function sendOpportunityBlast(opportunityId: number, skillNames: string[],
   console.log(`[blast] found ${students.length} matching students`);
 
   for (const student of students) {
-    // Basic distance check — skip if student is likely too far
+    // Distance check using org's actual coordinates vs student
     const distKm = Math.sqrt(
-      Math.pow((student.lat - 33.45) * 111, 2) + Math.pow((student.lng - (-112.07)) * 85, 2)
+      Math.pow((student.lat - opp.orgProfile.lat) * 111, 2) +
+      Math.pow((student.lng - opp.orgProfile.lng) * 85, 2)
     );
-    if (distKm > opp.radiusKm * 2) continue; // generous buffer since lat/lng is estimated
+    console.log(`[blast] student=${student.id} distKm=${distKm.toFixed(1)} radiusKm=${opp.radiusKm}`);
+    if (distKm > opp.radiusKm * 2) continue;
 
     const studentSkillNames = student.skills.map((s) => s.skill.name);
     const skillsMatched = requiredSkillNames.filter((s) => studentSkillNames.includes(s));
