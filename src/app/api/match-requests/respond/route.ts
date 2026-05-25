@@ -72,24 +72,24 @@ export async function POST(request: Request) {
   if (nextStatus === MatchRequestStatus.ACCEPTED) {
     if (isStudentRecipient) {
       // Org sent the request, student accepted — notify org
-      sendMatchRequestAcceptedEmail({
+      await sendMatchRequestAcceptedEmail({
         to: updated.orgProfile.contactEmail,
         recipientName: updated.orgProfile.organization,
         acceptorName: updated.student.fullName,
         opportunityTitle: updated.opportunity.title,
         contactEmail: updated.student.user.email,
         dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/org?view=accepted`
-      }).catch(() => {});
+      });
     } else {
       // Student sent the request, org accepted — notify student
-      sendMatchRequestAcceptedEmail({
+      await sendMatchRequestAcceptedEmail({
         to: updated.student.user.email,
         recipientName: updated.student.fullName,
         acceptorName: updated.orgProfile.organization,
         opportunityTitle: updated.opportunity.title,
         contactEmail: updated.orgProfile.contactEmail,
         dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/student?view=matches`
-      }).catch(() => {});
+      });
     }
   }
 

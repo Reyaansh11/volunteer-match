@@ -103,23 +103,23 @@ export async function POST(request: Request) {
   });
 
   if (initiatedBy === RequestInitiator.STUDENT) {
-    sendMatchRequestReceivedEmail({
+    await sendMatchRequestReceivedEmail({
       to: opportunity.orgProfile.contactEmail,
       recipientName: opportunity.orgProfile.organization,
       senderName: student.fullName,
       opportunityTitle: opportunity.title,
       message,
       dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/org?view=incoming`
-    }).catch(() => {});
+    });
   } else {
-    sendMatchRequestReceivedEmail({
+    await sendMatchRequestReceivedEmail({
       to: student.user.email,
       recipientName: student.fullName,
       senderName: opportunity.orgProfile.organization,
       opportunityTitle: opportunity.title,
       message,
       dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/student?view=incoming`
-    }).catch(() => {});
+    });
   }
 
   return redirectWithNotice(request, redirectTo, "success", "Request sent");

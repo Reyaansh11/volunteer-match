@@ -130,7 +130,7 @@ export async function POST(request: Request) {
     }
 
     // Notify admin — fire and forget
-    sendAdminNewOrgEmail({
+    await sendAdminNewOrgEmail({
       id: user.org.id,
       organization: user.org.organization,
       contactName: user.org.contactName,
@@ -139,7 +139,7 @@ export async function POST(request: Request) {
       category: user.org.category,
       city: user.org.city,
       state: user.org.state
-    }).catch(() => {});
+    });
 
     if (opportunityTitle && opportunityDescription && normalizedCommitment && availability) {
       const opportunity = await prisma.opportunity.create({
