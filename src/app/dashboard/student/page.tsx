@@ -14,13 +14,14 @@ import { rankOpportunities } from "@/lib/matching";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/guards";
 
-type StudentDashboardView = "overview" | "incoming" | "matches" | "log" | "ranked" | "history";
+type StudentDashboardView = "overview" | "incoming" | "matches" | "log" | "records" | "ranked" | "history";
 
 const STUDENT_VIEW_LABELS: Record<StudentDashboardView, string> = {
   overview: "Overview",
   incoming: "Incoming Requests",
   matches: "Your Matches",
   log: "Service Log",
+  records: "Service Records",
   ranked: "Ranked Opportunities",
   history: "Request History"
 };
@@ -74,7 +75,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
     },
     include: {
       opportunity: true,
-      orgProfile: true
+      orgProfile: true,
+      studentReview: true
     },
     orderBy: {
       createdAt: "desc"
@@ -196,6 +198,15 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           <label className="text-sm font-medium text-slate-700">
             Program Affiliation
             <input name="programAffiliation" defaultValue={student.programAffiliation || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Grade
+            <select name="grade" defaultValue={student.grade || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+              <option value="">— not set —</option>
+              {[6, 7, 8, 9, 10, 11, 12].map((g) => (
+                <option key={g} value={String(g)}>{g}th Grade</option>
+              ))}
+            </select>
           </label>
           <label className="text-sm font-medium text-slate-700">
             Max Travel Distance
@@ -338,22 +349,132 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
 
       {activeView === "log" ? (
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Service Log & Statistics</h2>
-        <p className="mt-2 text-sm text-slate-700">Total verified hours: <span className="font-semibold text-slate-900">{totalLoggedHours.toFixed(2)}</span></p>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Service Log & Statistics</h2>
+            <p className="mt-1 text-sm text-slate-700">Total verified hours: <span className="font-semibold text-slate-900">{totalLoggedHours.toFixed(2)}</span></p>
+          </div>
+          {completedLogs.length > 0 ? (
+            <Link
+              href="/service-summary"
+              target="_blank"
+              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              Print Summary
+            </Link>
+          ) : null}
+        </div>
         <div className="mt-4 grid gap-3">
           {completedLogs.length === 0 ? (
             <p className="text-sm text-slate-700">No completed service entries yet.</p>
           ) : (
             completedLogs.map((req) => (
-                <article key={req.id} className="rounded-lg border border-slate-200 p-4">
-                  <p className="font-medium text-slate-900">{req.opportunity.title}</p>
-                  <p className="mt-1 text-sm text-slate-700">Organization: {req.orgProfile.organization}</p>
-                  <p className="mt-1 text-sm text-slate-700">Hours logged: {req.hoursCompleted ?? 0}</p>
-                  <p className="mt-1 text-sm text-slate-700">Completed on: {req.completedAt ? new Date(req.completedAt).toLocaleDateString() : "N/A"}</p>
-                  {req.completionNotes ? <p className="mt-1 text-sm text-slate-700">Notes: {req.completionNotes}</p> : null}
-                </article>
-              ))
+              <article key={req.id} className="rounded-lg border border-slate-200 p-4">
+                <p className="font-medium text-slate-900">{req.opportunity.title}</p>
+                <p className="mt-1 text-sm text-slate-700">Organization: {req.orgProfile.organization}</p>
+                <p className="mt-1 text-sm text-slate-700">Hours logged: {req.hoursCompleted ?? 0}</p>
+                <p className="mt-1 text-sm text-slate-500">Date of Service: {req.serviceDate ? new Date(req.serviceDate).toLocaleDateString() : "—"}</p>
+                <p className="mt-0.5 text-sm text-slate-500">Confirmed: {req.completedAt ? new Date(req.completedAt).toLocaleDateString() : "N/A"}</p>
+                {req.completionNotes ? <p className="mt-1 text-sm text-slate-700">Notes: {req.completionNotes}</p> : null}
+              </article>
+            ))
           )}
+        </div>
+      </section>
+      ) : null}
+
+      {activeView === "records" ? (
+      <section className="rounded-2xl border-2 border-brand-700/20 bg-white shadow-sm overflow-hidden">
+        {/* Distinctive header — clearly different from "Your Matches" */}
+        <div className="bg-gradient-to-r from-brand-700 to-brand-500 px-6 py-5">
+          <h2 className="text-xl font-bold text-white">Service Records</h2>
+          <p className="mt-1 text-sm text-brand-50">
+            Your verified service history — ratings from supervisors and printable confirmation records.
+          </p>
+        </div>
+        <div className="p-6">
+          {completedLogs.length === 0 ? (
+            <div className="text-center py-10">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+                <svg className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-slate-700">No service records yet</p>
+              <p className="text-xs text-slate-500 mt-1">Completed services will appear here once an organization confirms them.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {completedLogs.map((req) => {
+                const review = req.studentReview;
+                return (
+                  <article key={req.id} className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div>
+                        <p className="font-semibold text-slate-900">{req.opportunity.title}</p>
+                        <p className="text-sm text-slate-600">{req.orgProfile.organization}</p>
+                        <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+                          <span>{req.hoursCompleted ?? "—"} hrs</span>
+                          <span>Service: {req.serviceDate ? new Date(req.serviceDate).toLocaleDateString() : "—"}</span>
+                          <span>Confirmed: {req.completedAt ? new Date(req.completedAt).toLocaleDateString() : "—"}</span>
+                        </div>
+                      </div>
+                      <Link
+                        href={`/service-form/${req.id}`}
+                        target="_blank"
+                        className="flex-shrink-0 flex items-center gap-1.5 rounded-lg bg-brand-700 px-3 py-2 text-xs font-semibold text-white hover:bg-brand-500 transition-colors"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        View Service Record
+                      </Link>
+                    </div>
+
+                    {/* Org review / rating */}
+                    {review ? (
+                      <div className="mt-4 rounded-lg border border-brand-700/15 bg-white p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Supervisor Rating</span>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <svg
+                                key={star}
+                                className={`h-4 w-4 ${star <= review.rating ? "text-amber-400" : "text-slate-200"}`}
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                          <span className="text-sm font-semibold text-slate-700">{review.rating}/5</span>
+                        </div>
+                        {review.feedback ? (
+                          <p className="text-sm text-slate-700 italic leading-relaxed">&ldquo;{review.feedback}&rdquo;</p>
+                        ) : (
+                          <p className="text-xs text-slate-400">No written feedback provided.</p>
+                        )}
+                        <p className="mt-2 text-xs text-slate-400">— {req.orgProfile.organization} · {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ""}</p>
+                      </div>
+                    ) : (
+                      <div className="mt-3 rounded-lg border border-slate-100 bg-white px-4 py-3">
+                        <p className="text-xs text-slate-400 italic">No supervisor rating yet for this service.</p>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <div className="border-t border-slate-100 bg-slate-50 px-6 py-3">
+          <p className="text-xs text-slate-500">
+            Ratings are submitted privately by supervising organizations. Only you can see your ratings — they are not shared publicly.
+          </p>
         </div>
       </section>
       ) : null}

@@ -40,6 +40,7 @@ export async function POST(request: Request) {
   const distanceUnit = normalizeDistanceUnit(String(formData.get("distanceUnit") || ""), "km");
   const timeZone = normalizeUsTimeZone(String(formData.get("availabilityTimeZone") || ""));
   const parentConsent = formData.get("parentConsent") === "on";
+  const grade = String(formData.get("grade") || "").trim();
   const parsedSkills = parseSkillsFromForm(formData, "skills", "skillsCustom");
 
   if (!fullName || !zipCode || !availability || parsedSkills.length === 0) {
@@ -69,7 +70,8 @@ export async function POST(request: Request) {
           distanceUnit,
           timeZone,
           lat: latLng.lat,
-          lng: latLng.lng
+          lng: latLng.lng,
+          grade: grade || null
         }
       });
 

@@ -103,6 +103,15 @@ export default async function StudentRegisterPage({ searchParams }: StudentRegis
             Program Affiliation (optional)
             <input name="programAffiliation" placeholder="National Honor Society" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
+          <label className="text-sm font-medium text-slate-700">
+            Grade *
+            <select name="grade" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+              <option value="">Select grade</option>
+              {[6, 7, 8, 9, 10, 11, 12].map((g) => (
+                <option key={g} value={String(g)}>{g}th Grade</option>
+              ))}
+            </select>
+          </label>
           <label className="md:col-span-2 flex items-center gap-2 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
             <input name="parentConsent" type="checkbox" />
             Parent/guardian consent has been obtained if required.

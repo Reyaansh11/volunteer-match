@@ -45,7 +45,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <div className="flex min-h-dvh flex-col">
 
           {/* ── Navigation ── */}
-          <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur-md">
+          <header className="print:hidden sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur-md">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               {/* Logo */}
               <Link href="/" className="font-display text-lg font-bold tracking-tight text-brand-700">
@@ -97,7 +97,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <main className="flex-1">{children}</main>
 
           {/* ── Footer ── */}
-          <footer className="border-t border-slate-200 bg-white">
+          <footer className="print:hidden border-t border-slate-200 bg-white">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <p className="font-medium text-slate-700">
                 © {currentYear}{" "}

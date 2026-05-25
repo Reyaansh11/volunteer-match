@@ -71,6 +71,7 @@ model StudentProfile {
   programAffiliation String?
   parentConsent      Boolean              @default(false)
   phone              String?
+  grade              String?
   emailUnsubscribed  Boolean              @default(false)
   unsubscribeToken   String?              @unique
   user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -194,6 +195,7 @@ model MatchRequest {
   createdAt       DateTime           @default(now())
   respondedAt     DateTime?
   completedAt     DateTime?
+  serviceDate     DateTime?
   hoursCompleted  Float?
   completionNotes String?
   student         StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)

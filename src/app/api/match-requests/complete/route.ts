@@ -27,6 +27,7 @@ export async function POST(request: Request) {
   const redirectTo = safeRedirectTo(String(formData.get("redirectTo") || "").trim(), "/dashboard/org?view=accepted");
   const hoursRaw = String(formData.get("hoursCompleted") || "").trim();
   const completionNotes = String(formData.get("completionNotes") || "").trim();
+  const serviceDateRaw = String(formData.get("serviceDate") || "").trim();
 
   if (!Number.isFinite(requestId) || requestId <= 0) {
     return redirectWithNotice(request, redirectTo, "error", "Invalid request");
@@ -54,12 +55,15 @@ export async function POST(request: Request) {
     return redirectWithNotice(request, redirectTo, "error", "This task is already marked complete");
   }
 
+  const serviceDate = serviceDateRaw ? new Date(serviceDateRaw) : null;
+
   await prisma.matchRequest.update({
     where: { id: requestId },
     data: {
       completedAt: new Date(),
       hoursCompleted,
-      completionNotes: completionNotes || null
+      completionNotes: completionNotes || null,
+      serviceDate: serviceDate && !isNaN(serviceDate.getTime()) ? serviceDate : null
     }
   });
 

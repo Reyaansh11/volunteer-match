@@ -49,8 +49,9 @@ export async function POST(request: Request) {
   const phone = String(formData.get("phone") || "").trim();
   const parsedSkills = parseSkillsFromForm(formData, "skills", "skillsCustom");
   const parentConsent = formData.get("parentConsent") === "on";
+  const grade = String(formData.get("grade") || "").trim();
 
-  if (!email || !password || !fullName || !zipCode || !availability || parsedSkills.length === 0) {
+  if (!email || !password || !fullName || !zipCode || !availability || parsedSkills.length === 0 || !grade) {
     return redirectWithError(request, "Please complete all required fields.");
   }
   if (password.length < 8) return redirectWithError(request, "Password must be at least 8 characters.");
@@ -84,6 +85,7 @@ export async function POST(request: Request) {
             programAffiliation: programAffiliation || null,
             parentConsent,
             phone: phone || null,
+            grade: grade || null,
             unsubscribeToken: randomBytes(16).toString("hex")
           }
         }
