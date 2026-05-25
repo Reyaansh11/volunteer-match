@@ -24,7 +24,7 @@ export const SKILL_OPTIONS = [
   "fundraising"
 ] as const;
 
-export const DEFAULT_US_TIME_ZONE = "America/Phoenix" as const;
+export const DEFAULT_US_TIME_ZONE = "America/Denver" as const;
 
 export const US_TIMEZONE_OPTIONS = [
   { value: "America/Phoenix", label: "Mountain Time (Arizona)" },
