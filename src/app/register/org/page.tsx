@@ -56,8 +56,9 @@ export default async function OrgRegisterPage({ searchParams }: OrgRegisterProps
             <input name="contactPhone" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
           </label>
           <label className="text-sm font-medium text-slate-700">
-            Website URL
-            <input name="websiteUrl" type="url" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+            Website URL *
+            <input name="websiteUrl" type="url" required placeholder="https://yourorg.org" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+            <span className="mt-1 block text-xs text-slate-500">Must begin with https://. Students will see this link — make sure it represents your organization.</span>
           </label>
           <label className="text-sm font-medium text-slate-700">
             ZIP Code *

@@ -117,6 +117,7 @@ export function rankOpportunities(student: StudentWithSkills, opportunities: Opp
       timeZone: opportunity.timeZone,
       contactEmail: opportunity.contactEmail,
       contactPhone: opportunity.contactPhone,
+      websiteUrl: opportunity.orgProfile.websiteUrl,
       distanceKm: round(distanceKm),
       rank: 0,
       breakdown: {

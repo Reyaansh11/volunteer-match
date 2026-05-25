@@ -14,6 +14,7 @@ export type RankedOpportunity = {
   timeZone: string;
   contactEmail: string;
   contactPhone: string | null;
+  websiteUrl: string;
   distanceKm: number;
   rank: number;
   breakdown: MatchBreakdown;

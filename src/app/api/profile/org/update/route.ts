@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         contactTitle,
         contactEmail,
         contactPhone: contactPhone || null,
-        websiteUrl: websiteUrl || null,
+        websiteUrl: websiteUrl || undefined,
         volunteerNotes: volunteerNotes || null,
         lat: latLng.lat,
         lng: latLng.lng

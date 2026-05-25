@@ -24,6 +24,13 @@ enum RequestInitiator {
   ORG
 }
 
+enum OrgStatus {
+  PENDING
+  APPROVED
+  YELLOW
+  REJECTED
+}
+
 model User {
   id           Int              @id @default(autoincrement())
   email        String           @unique
@@ -89,8 +96,10 @@ model OrgProfile {
   contactTitle   String?               // adult supervisor title
   contactEmail   String
   contactPhone   String?
-  websiteUrl     String?
+  websiteUrl     String
   volunteerNotes String?
+  status         OrgStatus             @default(PENDING)
+  adminNote      String?
   user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   opportunities  Opportunity[]
   matchRequests  MatchRequest[]
@@ -203,6 +212,12 @@ model StudentReview {
   matchRequest  MatchRequest   @relation(fields: [matchRequestId], references: [id], onDelete: Cascade)
   student       StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
   orgProfile    OrgProfile     @relation(fields: [orgProfileId], references: [id], onDelete: Cascade)
+}
+
+model EmailBlocklist {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
 }
 
 model ServiceHourForm {

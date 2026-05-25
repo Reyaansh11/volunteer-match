@@ -8,6 +8,7 @@ export default async function OpportunitiesPage() {
 
   try {
     opportunities = await prisma.opportunity.findMany({
+      where: { orgProfile: { status: "APPROVED" } },
       include: {
         orgProfile: true,
         skills: {

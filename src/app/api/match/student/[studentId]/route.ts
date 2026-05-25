@@ -26,6 +26,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ studentId:
   }
 
   const opportunities = await prisma.opportunity.findMany({
+    where: { orgProfile: { status: "APPROVED" } },
     include: {
       orgProfile: true,
       skills: {

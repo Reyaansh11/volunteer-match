@@ -13,6 +13,7 @@ import {
 } from "@/lib/auth";
 import { normalizeDistanceUnit, normalizeUsTimeZone, toKilometers } from "@/lib/form-options";
 import { prisma } from "@/lib/prisma";
+import { sendAdminNewOrgEmail } from "@/lib/email";
 
 function redirectWithError(request: Request, message: string) {
   const encoded = encodeURIComponent(message);
@@ -51,11 +52,32 @@ export async function POST(request: Request) {
   const normalizedCommitment =
     oneDayOpportunity && requiredCommitment ? "One-time event" : requiredCommitment;
 
-  if (!email || !password || !organization || !zipCode || !contactName || !contactTitle || !contactEmail) {
-    return redirectWithError(request, "Please complete all required fields.");
+  if (!email || !password || !organization || !zipCode || !contactName || !contactTitle || !contactEmail || !websiteUrl) {
+    return redirectWithError(request, "Please complete all required fields including your website URL.");
   }
   if (password.length < 8) {
     return redirectWithError(request, "Password must be at least 8 characters.");
+  }
+  if (!websiteUrl.startsWith("https://")) {
+    return redirectWithError(request, "Website URL must start with https://");
+  }
+
+  // Check email blocklist
+  const blocked = await prisma.emailBlocklist.findUnique({ where: { email } });
+  if (blocked) {
+    return redirectWithError(request, "This email address is not permitted to register.");
+  }
+
+  // Reachability check (soft — some sites block server requests)
+  let siteReachable = true;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(websiteUrl, { method: "HEAD", signal: controller.signal, redirect: "follow" });
+    clearTimeout(timeout);
+    siteReachable = res.ok || res.status < 500;
+  } catch {
+    siteReachable = false;
   }
 
   const latLng = estimateLatLngFromZip(zipCode);
@@ -80,8 +102,10 @@ export async function POST(request: Request) {
             contactTitle,
             contactEmail,
             contactPhone: contactPhone || null,
-            websiteUrl: websiteUrl || null,
-            volunteerNotes: volunteerNotes || null
+            websiteUrl,
+            volunteerNotes: volunteerNotes || null,
+            status: "PENDING",
+            adminNote: siteReachable ? null : "⚠️ Website did not respond during signup check."
           }
         }
       },
@@ -93,6 +117,18 @@ export async function POST(request: Request) {
     if (!user.org) {
       return redirectWithError(request, "Could not create organization profile.");
     }
+
+    // Notify admin — fire and forget
+    sendAdminNewOrgEmail({
+      id: user.org.id,
+      organization: user.org.organization,
+      contactName: user.org.contactName,
+      contactEmail: user.org.contactEmail,
+      websiteUrl: user.org.websiteUrl,
+      category: user.org.category,
+      city: user.org.city,
+      state: user.org.state
+    }).catch(() => {});
 
     if (opportunityTitle && opportunityDescription && normalizedCommitment && availability) {
       const opportunity = await prisma.opportunity.create({

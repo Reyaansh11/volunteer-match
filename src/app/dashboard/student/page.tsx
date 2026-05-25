@@ -57,6 +57,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
   }
 
   const opportunities = await prisma.opportunity.findMany({
+    where: { orgProfile: { status: "APPROVED" } },
     include: {
       orgProfile: true,
       skills: {
@@ -368,6 +369,12 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
               <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Rank #{match.rank}</p>
               <h2 className="mt-1 text-lg font-semibold text-slate-900">{match.title}</h2>
               <p className="mt-1 text-sm text-slate-700">{match.organization}</p>
+              <a href={match.websiteUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-sm text-brand-700 underline hover:text-brand-500">
+                {match.websiteUrl}
+              </a>
+              <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                Do your research before sending a match request — visit this organization&apos;s website and make sure you&apos;re comfortable with who they are.
+              </p>
               <p className="mt-2 text-sm text-slate-700">Time needed: {match.availability} ({formatTimeZoneLabel(match.timeZone)})</p>
               <p className="mt-2 text-sm text-slate-700">Commitment: {match.requiredCommitment}</p>
               <p className="mt-2 text-sm text-slate-700">
@@ -396,6 +403,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
                     placeholder="Optional message to organization"
                     className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                   />
+                  <p className="text-xs text-slate-500">By sending a request, you confirm you have reviewed this organization&apos;s website and are comfortable proceeding.</p>
                   <button type="submit" className="w-fit rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500">
                     Send Match Request
                   </button>
