@@ -7,7 +7,7 @@ const config: Config = {
       colors: {
         // Primary brand color updated from teal to forest green (Stitch palette)
         brand: {
-          50: "#cbffc2",   // light green accent / badge backgrounds
+          50: "#e8f5e2",   // muted sage green / badge backgrounds (not neon)
           500: "#1b6d24",  // hover / lighter primary
           700: "#0d631b",  // primary CTA green
         },

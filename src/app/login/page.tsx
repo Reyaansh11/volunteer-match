@@ -66,7 +66,7 @@ export default async function LoginPage({ searchParams }: LoginProps) {
         {/* ── Sign up prompt ── */}
         <article className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
           <div>
-            <span className="inline-block rounded-full bg-[#a0f2e1]/30 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#006054]">
+            <span className="inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-600">
               New here?
             </span>
             <h2 className="mt-3 text-xl text-slate-900">Create an account</h2>
