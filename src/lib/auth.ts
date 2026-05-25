@@ -1,18 +1,18 @@
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export const SESSION_COOKIE = "vm_session";
-const SESSION_DAYS = 14;
+const SESSION_DAYS = 7;
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
 export async function hashPassword(password: string) {
-  return bcrypt.hash(password, 12);
+  return bcrypt.hash(password, 14);
 }
 
 export async function verifyPassword(password: string, passwordHash: string) {
@@ -23,7 +23,11 @@ export async function verifyPassword(password: string, passwordHash: string) {
 
   // Backward compatibility for earlier prototype accounts that used sha256 directly.
   const legacyHash = createHash("sha256").update(password).digest("hex");
-  return legacyHash === passwordHash;
+  try {
+    return timingSafeEqual(Buffer.from(legacyHash), Buffer.from(passwordHash));
+  } catch {
+    return false;
+  }
 }
 
 export function normalizeRole(input: string | null): UserRole | null {
@@ -128,8 +132,8 @@ export function requireSameOrigin(request: Request): boolean {
     }
   }
 
-  // Some clients omit both headers for same-site form posts.
-  return true;
+  // Reject if neither header is present — don't allow unverifiable origin.
+  return false;
 }
 
 export function estimateLatLngFromZip(zipCode: string) {

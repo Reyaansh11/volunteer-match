@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
 import { createSession, getSessionCookieOptions, normalizeRole, requireSameOrigin, SESSION_COOKIE, verifyPassword } from "@/lib/auth";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   if (!requireSameOrigin(request)) {
     return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
+  }
+
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`login:${ip}`, 10, 15 * 60 * 1000); // 10 attempts per 15 min
+  if (!rl.allowed) {
+    return NextResponse.redirect(new URL(`/login?error=Too+many+attempts.+Try+again+in+${Math.ceil(rl.retryAfterMs / 60000)}+minutes.`, request.url), 303);
   }
 
   const formData = await request.formData();

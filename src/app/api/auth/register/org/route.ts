@@ -12,6 +12,7 @@ import {
   SESSION_COOKIE
 } from "@/lib/auth";
 import { normalizeDistanceUnit, normalizeUsTimeZone, toKilometers } from "@/lib/form-options";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { sendAdminNewOrgEmail } from "@/lib/email";
 
@@ -23,6 +24,12 @@ function redirectWithError(request: Request, message: string) {
 export async function POST(request: Request) {
   if (!requireSameOrigin(request)) {
     return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
+  }
+
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`register:${ip}`, 5, 60 * 60 * 1000); // 5 signups per hour per IP
+  if (!rl.allowed) {
+    return redirectWithError(request, "Too many registration attempts. Please try again later.");
   }
 
   const formData = await request.formData();
@@ -61,6 +68,10 @@ export async function POST(request: Request) {
   if (!websiteUrl.startsWith("https://")) {
     return redirectWithError(request, "Website URL must start with https://");
   }
+  if (email.length > 254) return redirectWithError(request, "Email address is too long.");
+  if (organization.length > 150) return redirectWithError(request, "Organization name is too long.");
+  if (description.length > 3000) return redirectWithError(request, "Description must be under 3000 characters.");
+  if (contactName.length > 100) return redirectWithError(request, "Contact name is too long.");
 
   // Check email blocklist
   const blocked = await prisma.emailBlocklist.findUnique({ where: { email } });

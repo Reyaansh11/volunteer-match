@@ -24,7 +24,9 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function AdminPage() {
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() =>
+    typeof window !== "undefined" ? sessionStorage.getItem("admin_token") ?? "" : ""
+  );
   const [authed, setAuthed] = useState(false);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [error, setError] = useState("");
@@ -34,7 +36,9 @@ export default function AdminPage() {
   async function load(t: string) {
     const res = await fetch("/api/admin/orgs", { headers: { "x-admin-token": t } });
     if (!res.ok) { setError("Invalid token"); return; }
-    setOrgs(await res.json());
+    const data = await res.json();
+    setOrgs(data.orgs ?? data);
+    sessionStorage.setItem("admin_token", t);
     setAuthed(true);
   }
 

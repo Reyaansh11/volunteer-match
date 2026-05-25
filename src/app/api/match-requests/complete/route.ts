@@ -36,6 +36,9 @@ export async function POST(request: Request) {
   if (!Number.isFinite(hoursCompleted) || hoursCompleted <= 0) {
     return redirectWithNotice(request, redirectTo, "error", "Enter completed hours greater than zero");
   }
+  if (hoursCompleted > 24) {
+    return redirectWithNotice(request, redirectTo, "error", "Hours completed cannot exceed 24 per session");
+  }
 
   const matchRequest = await prisma.matchRequest.findUnique({
     where: { id: requestId }

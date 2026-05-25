@@ -11,6 +11,7 @@ import {
   SESSION_COOKIE
 } from "@/lib/auth";
 import { normalizeDistanceUnit, normalizeUsTimeZone, toKilometers } from "@/lib/form-options";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithError(request: Request, message: string) {
@@ -21,6 +22,12 @@ function redirectWithError(request: Request, message: string) {
 export async function POST(request: Request) {
   if (!requireSameOrigin(request)) {
     return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
+  }
+
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`register:${ip}`, 5, 60 * 60 * 1000); // 5 signups per hour per IP
+  if (!rl.allowed) {
+    return redirectWithError(request, "Too many registration attempts. Please try again later.");
   }
 
   const formData = await request.formData();
@@ -45,9 +52,11 @@ export async function POST(request: Request) {
   if (!email || !password || !fullName || !zipCode || !availability || parsedSkills.length === 0) {
     return redirectWithError(request, "Please complete all required fields.");
   }
-  if (password.length < 8) {
-    return redirectWithError(request, "Password must be at least 8 characters.");
-  }
+  if (password.length < 8) return redirectWithError(request, "Password must be at least 8 characters.");
+  if (email.length > 254) return redirectWithError(request, "Email address is too long.");
+  if (fullName.length > 100) return redirectWithError(request, "Name is too long.");
+  if (personalStatement.length > 2000) return redirectWithError(request, "Personal statement must be under 2000 characters.");
+  if (school.length > 150) return redirectWithError(request, "School name is too long.");
 
   const latLng = estimateLatLngFromZip(zipCode);
   try {

@@ -1,22 +1,39 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { OrgStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendOrgYellowFlagEmail } from "@/lib/email";
 
 function isAuthorized(request: Request) {
   const token = request.headers.get("x-admin-token");
-  return token === process.env.ADMIN_SECRET;
+  const secret = process.env.ADMIN_SECRET;
+  if (!token || !secret) return false;
+  try {
+    return timingSafeEqual(Buffer.from(token), Buffer.from(secret));
+  } catch {
+    return false;
+  }
 }
 
 export async function GET(request: Request) {
   if (!isAuthorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const orgs = await prisma.orgProfile.findMany({
-    include: { user: { select: { email: true, createdAt: true } } },
-    orderBy: { createdAt: "desc" }
-  });
+  const { searchParams } = new URL(request.url);
+  const page = Math.max(1, Number(searchParams.get("page") || 1));
+  const take = 50;
+  const skip = (page - 1) * take;
 
-  return NextResponse.json(orgs);
+  const [orgs, total] = await Promise.all([
+    prisma.orgProfile.findMany({
+      include: { user: { select: { email: true, createdAt: true } } },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take
+    }),
+    prisma.orgProfile.count()
+  ]);
+
+  return NextResponse.json({ orgs, total, page, pages: Math.ceil(total / take) });
 }
 
 export async function POST(request: Request) {
