@@ -33,6 +33,7 @@ export default async function VerifyPage({ params }: Props) {
   const student = req.student;
   const org = req.orgProfile;
   const opp = req.opportunity;
+  const oppTitle = opp?.title ?? req.opportunityTitle ?? "Service Opportunity";
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
@@ -99,7 +100,7 @@ export default async function VerifyPage({ params }: Props) {
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               <div>
                 <span className="text-slate-500">Opportunity</span>
-                <p className="font-semibold text-slate-900">{opp.title}</p>
+                <p className="font-semibold text-slate-900">{oppTitle}</p>
               </div>
               <div>
                 <span className="text-slate-500">Organization</span>

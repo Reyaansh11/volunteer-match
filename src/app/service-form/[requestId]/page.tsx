@@ -43,7 +43,8 @@ export default async function ServiceFormPage({ params }: Props) {
 
   const student = req.student;
   const org = req.orgProfile;
-  const opp = req.opportunity;
+  const opp = req.opportunity; // may be null if opportunity was deleted (snapshot fallback used below)
+  const oppTitle = opp?.title ?? req.opportunityTitle ?? "Service Opportunity";
   const verifyUrl = `${BASE_URL}/verify/${id}`;
 
   return (
@@ -136,14 +137,14 @@ export default async function ServiceFormPage({ params }: Props) {
           <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 text-sm">
             <div>
               <span className="text-slate-500">Opportunity Title</span>
-              <p className="font-semibold text-slate-900">{opp.title}</p>
+              <p className="font-semibold text-slate-900">{oppTitle}</p>
             </div>
             <div>
               <span className="text-slate-500">Organization</span>
               <p className="font-semibold text-slate-900">{org.organization}</p>
             </div>
           </div>
-          {opp.description ? (
+          {opp?.description ? (
             <div className="mt-3">
               <span className="text-xs text-slate-500">Opportunity Description</span>
               <p className="mt-1 text-sm text-slate-700 leading-relaxed border-l-2 border-slate-200 pl-3">{opp.description}</p>

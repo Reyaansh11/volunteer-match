@@ -293,7 +293,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
             incomingRequests.map((req) => (
               <article key={req.id} className="rounded-lg border border-slate-200 p-4">
                 <p className="text-sm text-slate-800">
-                  <span className="font-medium">{req.orgProfile.organization}</span> requested to match for <span className="font-medium">{req.opportunity.title}</span>
+                  <span className="font-medium">{req.orgProfile.organization}</span> requested to match for <span className="font-medium">{req.opportunity?.title ?? req.opportunityTitle ?? "Opportunity"}</span>
                 </p>
                 <p className="mt-1 text-sm text-slate-700">Message: {req.message || "No message provided"}</p>
                 <div className="mt-3 flex gap-2">
@@ -335,14 +335,18 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           ) : (
             acceptedRequests.map((req) => (
               <article key={req.id} className="rounded-lg border border-slate-200 p-4">
-                <p className="font-medium text-slate-900">{req.opportunity.title}</p>
+                <p className="font-medium text-slate-900">{req.opportunity?.title ?? req.opportunityTitle ?? "Opportunity"}</p>
                 <p className="mt-1 text-sm text-slate-700">Organization: {req.orgProfile.organization}</p>
-                <p className="mt-1 text-sm text-slate-700">Time needed: {req.opportunity.availability}</p>
-                <p className="mt-1 text-sm text-slate-700">Commitment: {req.opportunity.requiredCommitment}</p>
-                <p className="mt-1 text-sm text-slate-700">
-                  Contact: <a href={`mailto:${req.opportunity.contactEmail}`} className="text-brand-700 underline">{req.opportunity.contactEmail}</a>
-                  {req.opportunity.contactPhone ? ` | ${req.opportunity.contactPhone}` : ""}
-                </p>
+                {req.opportunity ? (
+                  <>
+                    <p className="mt-1 text-sm text-slate-700">Time needed: {req.opportunity.availability}</p>
+                    <p className="mt-1 text-sm text-slate-700">Commitment: {req.opportunity.requiredCommitment}</p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      Contact: <a href={`mailto:${req.opportunity.contactEmail}`} className="text-brand-700 underline">{req.opportunity.contactEmail}</a>
+                      {req.opportunity.contactPhone ? ` | ${req.opportunity.contactPhone}` : ""}
+                    </p>
+                  </>
+                ) : null}
                 <p className="mt-2 text-xs text-slate-500">Match request ID: {req.id}</p>
               </article>
             ))
@@ -355,8 +359,9 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">Service Log & Statistics</h2>
-            <p className="mt-1 text-sm text-slate-700">Total verified hours: <span className="font-semibold text-slate-900">{totalLoggedHours.toFixed(2)}</span></p>
+            <h2 className="text-xl font-semibold text-slate-900">Service Log</h2>
+            <p className="mt-1 text-sm text-slate-500 max-w-lg">An all-time running log of every service session you&apos;ve completed through ServeConnect — hours, dates, and notes.</p>
+            <p className="mt-2 text-sm text-slate-700">Total verified hours: <span className="font-semibold text-slate-900">{totalLoggedHours.toFixed(2)}</span></p>
           </div>
           {completedLogs.length > 0 ? (
             <Link
@@ -377,8 +382,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           ) : (
             completedLogs.map((req) => (
               <article key={req.id} className="rounded-lg border border-slate-200 p-4">
-                <p className="font-medium text-slate-900">{req.opportunity.title}</p>
-                <p className="mt-1 text-sm text-slate-700">Organization: {req.orgProfile.organization}</p>
+                <p className="font-medium text-slate-900">{req.opportunity?.title ?? req.opportunityTitle ?? "Service Opportunity"}</p>
+                <p className="mt-1 text-sm text-slate-700">Organization: {req.orgProfile?.organization ?? "Organization"}</p>
                 <p className="mt-1 text-sm text-slate-700">Hours logged: {req.hoursCompleted ?? 0}</p>
                 <p className="mt-1 text-sm text-slate-500">Date of Service: {req.serviceDate ? new Date(req.serviceDate).toLocaleDateString() : "—"}</p>
                 <p className="mt-0.5 text-sm text-slate-500">Confirmed: {req.completedAt ? new Date(req.completedAt).toLocaleDateString() : "N/A"}</p>
@@ -396,7 +401,11 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         <div className="bg-gradient-to-r from-brand-700 to-brand-500 px-6 py-5">
           <h2 className="text-xl font-bold text-white">Service Records</h2>
           <p className="mt-1 text-sm text-brand-50">
-            Your verified service history — ratings from supervisors and printable confirmation records.
+            Printable confirmation records for each completed service — use these to show your supervisor or NHS chapter advisor.
+            Each record includes a public verification link your advisor can use to confirm authenticity.
+          </p>
+          <p className="mt-2 text-xs text-white/70">
+            Supervisor ratings (visible only to you) are also shown here.
           </p>
         </div>
         <div className="p-6">
@@ -418,8 +427,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
                   <article key={req.id} className="rounded-xl border border-slate-200 bg-slate-50 p-5">
                     <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div>
-                        <p className="font-semibold text-slate-900">{req.opportunity.title}</p>
-                        <p className="text-sm text-slate-600">{req.orgProfile.organization}</p>
+                        <p className="font-semibold text-slate-900">{req.opportunity?.title ?? req.opportunityTitle ?? "Service Opportunity"}</p>
+                        <p className="text-sm text-slate-600">{req.orgProfile?.organization ?? "Organization"}</p>
                         <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
                           <span>{req.hoursCompleted ?? "—"} hrs</span>
                           <span>Service: {req.serviceDate ? new Date(req.serviceDate).toLocaleDateString() : "—"}</span>
@@ -553,7 +562,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           ) : (
             outgoingRequests.map((req) => (
               <p key={req.id}>
-                #{req.id} - {req.opportunity.title} - {req.status}
+                #{req.id} - {req.opportunity?.title ?? req.opportunityTitle ?? "Opportunity"} - {req.status}
               </p>
             ))
           )}

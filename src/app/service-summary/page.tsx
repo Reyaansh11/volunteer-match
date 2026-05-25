@@ -136,8 +136,8 @@ export default async function ServiceSummaryPage() {
                   <div className="flex-1 border-b border-slate-100 pb-4">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="font-semibold text-slate-900 text-sm">{req.opportunity.title}</p>
-                        <p className="text-xs text-slate-500">{req.orgProfile.organization}</p>
+                        <p className="font-semibold text-slate-900 text-sm">{req.opportunity?.title ?? req.opportunityTitle ?? "Service Opportunity"}</p>
+                        <p className="text-xs text-slate-500">{req.orgProfile?.organization ?? "Organization"}</p>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="text-sm font-bold text-slate-900">{req.hoursCompleted ?? "—"} hrs</p>

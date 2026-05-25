@@ -76,7 +76,7 @@ export async function POST(request: Request) {
         to: updated.orgProfile.contactEmail,
         recipientName: updated.orgProfile.organization,
         acceptorName: updated.student.fullName,
-        opportunityTitle: updated.opportunity.title,
+        opportunityTitle: updated.opportunity?.title ?? updated.opportunityTitle ?? "Opportunity",
         contactEmail: updated.student.user.email,
         dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/org?view=accepted`
       });
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
         to: updated.student.user.email,
         recipientName: updated.student.fullName,
         acceptorName: updated.orgProfile.organization,
-        opportunityTitle: updated.opportunity.title,
+        opportunityTitle: updated.opportunity?.title ?? updated.opportunityTitle ?? "Opportunity",
         contactEmail: updated.orgProfile.contactEmail,
         dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/student?view=matches`
       });

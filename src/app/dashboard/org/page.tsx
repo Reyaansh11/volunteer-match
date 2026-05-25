@@ -308,7 +308,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                 incomingRequests.map((req) => (
                   <article key={req.id} className="rounded-lg border border-slate-200 p-4">
                     <p className="text-sm text-slate-800">
-                      <span className="font-medium">{req.student.fullName}</span> requested <span className="font-medium">{req.opportunity.title}</span>
+                      <span className="font-medium">{req.student.fullName}</span> requested <span className="font-medium">{req.opportunity?.title ?? req.opportunityTitle ?? "Opportunity"}</span>
                     </p>
                     <p className="mt-1 text-sm text-slate-700">Message: {req.message || "No message provided"}</p>
                     <div className="mt-3 flex gap-2">
@@ -549,7 +549,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
               ) : (
                 acceptedRequests.map((req) => (
                   <article key={req.id} className="rounded-lg border border-slate-200 p-4">
-                    <p className="font-medium text-slate-900">{req.opportunity.title}</p>
+                    <p className="font-medium text-slate-900">{req.opportunity?.title ?? req.opportunityTitle ?? "Opportunity"}</p>
                     <p className="mt-1 text-sm text-slate-700">
                       Student: {req.student.fullName} — <a href={`mailto:${req.student.user.email}`} className="text-brand-700 underline">{req.student.user.email}</a>
                     </p>

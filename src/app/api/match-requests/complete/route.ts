@@ -42,7 +42,8 @@ export async function POST(request: Request) {
   }
 
   const matchRequest = await prisma.matchRequest.findUnique({
-    where: { id: requestId }
+    where: { id: requestId },
+    include: { opportunity: true }
   });
 
   if (!matchRequest || matchRequest.orgProfileId !== user.org.id) {
@@ -63,7 +64,9 @@ export async function POST(request: Request) {
       completedAt: new Date(),
       hoursCompleted,
       completionNotes: completionNotes || null,
-      serviceDate: serviceDate && !isNaN(serviceDate.getTime()) ? serviceDate : null
+      serviceDate: serviceDate && !isNaN(serviceDate.getTime()) ? serviceDate : null,
+      // Snapshot the opportunity title so it persists even if the opportunity is later deleted
+      opportunityTitle: matchRequest.opportunity?.title ?? matchRequest.opportunityTitle ?? null
     }
   });
 

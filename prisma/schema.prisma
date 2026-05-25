@@ -188,19 +188,20 @@ model MatchRequest {
   id              Int                @id @default(autoincrement())
   studentId       Int
   orgProfileId    Int
-  opportunityId   Int
-  initiatedBy     RequestInitiator
-  status          MatchRequestStatus @default(PENDING)
-  message         String?
-  createdAt       DateTime           @default(now())
-  respondedAt     DateTime?
-  completedAt     DateTime?
-  serviceDate     DateTime?
-  hoursCompleted  Float?
-  completionNotes String?
-  student         StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  orgProfile      OrgProfile         @relation(fields: [orgProfileId], references: [id], onDelete: Cascade)
-  opportunity     Opportunity        @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  opportunityId    Int?
+  opportunityTitle String?            // snapshot: preserved even if opportunity is deleted
+  initiatedBy      RequestInitiator
+  status           MatchRequestStatus @default(PENDING)
+  message          String?
+  createdAt        DateTime           @default(now())
+  respondedAt      DateTime?
+  completedAt      DateTime?
+  serviceDate      DateTime?
+  hoursCompleted   Float?
+  completionNotes  String?
+  student          StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  orgProfile       OrgProfile         @relation(fields: [orgProfileId], references: [id], onDelete: Cascade)
+  opportunity      Opportunity?       @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
   serviceHourForm ServiceHourForm?
   studentReview   StudentReview?
 }

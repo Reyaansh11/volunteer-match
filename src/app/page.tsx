@@ -101,8 +101,11 @@ export default async function Home() {
               <Link href="/dashboard/student?view=matches" className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors">
                 View Your Matches
               </Link>
+              <Link href="/dashboard/student?view=records" className="rounded-lg border border-brand-700/30 bg-brand-50 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50/80 transition-colors">
+                Service Records
+              </Link>
               <Link href="/dashboard/student?view=log" className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
-                View Service Log
+                Service Log
               </Link>
             </div>
           ) : null}
