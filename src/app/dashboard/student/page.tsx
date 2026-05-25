@@ -311,6 +311,9 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
       {activeView === "matches" ? (
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-slate-900">Your Matches</h2>
+        <p className="mt-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
+          You&apos;re matched! Reach out directly to the organization using the contact details on each card below.
+        </p>
         <div className="mt-4 grid gap-3">
           {acceptedRequests.length === 0 ? (
             <p className="text-sm text-slate-700">No accepted matches yet.</p>
@@ -322,7 +325,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
                 <p className="mt-1 text-sm text-slate-700">Time needed: {req.opportunity.availability}</p>
                 <p className="mt-1 text-sm text-slate-700">Commitment: {req.opportunity.requiredCommitment}</p>
                 <p className="mt-1 text-sm text-slate-700">
-                  Contact: {req.opportunity.contactEmail}
+                  Contact: <a href={`mailto:${req.opportunity.contactEmail}`} className="text-brand-700 underline">{req.opportunity.contactEmail}</a>
                   {req.opportunity.contactPhone ? ` | ${req.opportunity.contactPhone}` : ""}
                 </p>
                 <p className="mt-2 text-xs text-slate-500">Match request ID: {req.id}</p>
@@ -385,7 +388,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
 
               {acceptedRequest ? (
                 <p className="mt-3 rounded-md bg-green-50 p-2 text-sm text-green-700">
-                  Match accepted. Contact: {match.contactEmail}
+                  Match accepted — reach out directly:{" "}
+                  <a href={`mailto:${match.contactEmail}`} className="underline font-medium">{match.contactEmail}</a>
                   {match.contactPhone ? ` | ${match.contactPhone}` : ""}
                 </p>
               ) : null}

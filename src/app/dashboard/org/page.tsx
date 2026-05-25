@@ -451,6 +451,18 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                 <p className="mt-1 text-sm text-slate-700">
                   Radius: {fromKilometers(selectedOpportunity.radiusKm, selectedRadiusUnit).toFixed(1)} {selectedRadiusUnit}
                 </p>
+                <form
+                  action="/api/org/opportunities/delete"
+                  method="post"
+                  className="mt-3"
+                  onSubmit={(e) => { if (!confirm("Remove this opportunity? This cannot be undone.")) e.preventDefault(); }}
+                >
+                  <input type="hidden" name="opportunityId" value={selectedOpportunity.id} />
+                  <input type="hidden" name="redirectTo" value="/dashboard/org?view=opportunities" />
+                  <button type="submit" className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-500">
+                    Remove Opportunity
+                  </button>
+                </form>
               </article>
             ) : null}
           </section>
@@ -539,6 +551,9 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
         {activeView === "accepted" ? (
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-slate-900">Accepted Matches and Completion Log</h2>
+            <p className="mt-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
+              You can now communicate directly with matched students via email — their address is shown on each card below.
+            </p>
             <div className="mt-4 grid gap-4">
               {acceptedRequests.length === 0 ? (
                 <p className="text-sm text-slate-700">No accepted matches yet.</p>
@@ -547,7 +562,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                   <article key={req.id} className="rounded-lg border border-slate-200 p-4">
                     <p className="font-medium text-slate-900">{req.opportunity.title}</p>
                     <p className="mt-1 text-sm text-slate-700">
-                      Student: {req.student.fullName} ({req.student.user.email})
+                      Student: {req.student.fullName} — <a href={`mailto:${req.student.user.email}`} className="text-brand-700 underline">{req.student.user.email}</a>
                     </p>
                     <p className="mt-1 text-sm text-slate-700">Request message: {req.message || "No message"}</p>
 
