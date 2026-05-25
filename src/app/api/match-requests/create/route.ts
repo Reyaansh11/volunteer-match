@@ -96,6 +96,7 @@ export async function POST(request: Request) {
       studentId,
       orgProfileId: opportunity.orgProfileId,
       opportunityId,
+      opportunityTitle: opportunity.title, // snapshot so title persists if opportunity is later deleted
       initiatedBy,
       status: MatchRequestStatus.PENDING,
       message: message || null

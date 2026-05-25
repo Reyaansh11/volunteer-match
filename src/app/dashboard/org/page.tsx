@@ -573,7 +573,8 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                           </select>
                         </label>
                         <label className="text-sm font-medium text-slate-700">
-                          Optional feedback
+                          Private note for student (optional)
+                          <p className="mt-0.5 text-xs font-normal text-slate-500">Sent only to the student — does not appear on service records or printed forms.</p>
                           <textarea name="feedback" rows={2} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
                         </label>
                         <button type="submit" className="w-fit rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500 transition-colors">
@@ -612,7 +613,8 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                           <input name="hoursCompleted" type="number" step="0.25" min="0.25" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
                         </label>
                         <label className="md:col-span-2 text-sm font-medium text-slate-700">
-                          Activity Description / Notes (optional)
+                          Activity description for service record (optional)
+                          <p className="mt-0.5 text-xs font-normal text-slate-500">Appears on the printed service form visible to the student and their NHS advisor — keep it professional.</p>
                           <input name="completionNotes" placeholder="Brief description of what the student did" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
                         </label>
                         <button type="submit" className="w-fit rounded-md bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-500 md:col-span-2">
