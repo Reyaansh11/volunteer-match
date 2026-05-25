@@ -71,6 +71,8 @@ model StudentProfile {
   programAffiliation String?
   parentConsent      Boolean              @default(false)
   phone              String?
+  emailUnsubscribed  Boolean              @default(false)
+  unsubscribeToken   String?              @unique
   user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   skills             StudentSkill[]
   applications       Application[]

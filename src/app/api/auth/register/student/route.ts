@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Prisma, UserRole } from "@prisma/client";
+import { randomBytes } from "crypto";
 import {
   buildAvailabilityFromForm,
   createSession,
@@ -82,7 +83,8 @@ export async function POST(request: Request) {
             letterOfRecUrl: letterOfRecUrl || null,
             programAffiliation: programAffiliation || null,
             parentConsent,
-            phone: phone || null
+            phone: phone || null,
+            unsubscribeToken: randomBytes(16).toString("hex")
           }
         }
       },

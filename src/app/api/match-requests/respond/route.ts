@@ -1,6 +1,7 @@
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentUser, requireSameOrigin, safeRedirectTo } from "@/lib/auth";
+import { sendMatchRequestAcceptedEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithNotice(request: Request, redirectTo: string, key: "error" | "success", value: string) {
@@ -58,13 +59,39 @@ export async function POST(request: Request) {
 
   const nextStatus = action === "accept" ? MatchRequestStatus.ACCEPTED : MatchRequestStatus.REJECTED;
 
-  await prisma.matchRequest.update({
+  const updated = await prisma.matchRequest.update({
     where: { id: requestId },
-    data: {
-      status: nextStatus,
-      respondedAt: new Date()
+    data: { status: nextStatus, respondedAt: new Date() },
+    include: {
+      opportunity: true,
+      student: { include: { user: { select: { email: true } } } },
+      orgProfile: true
     }
   });
+
+  if (nextStatus === MatchRequestStatus.ACCEPTED) {
+    if (isStudentRecipient) {
+      // Org sent the request, student accepted — notify org
+      sendMatchRequestAcceptedEmail({
+        to: updated.orgProfile.contactEmail,
+        recipientName: updated.orgProfile.organization,
+        acceptorName: updated.student.fullName,
+        opportunityTitle: updated.opportunity.title,
+        contactEmail: updated.student.user.email,
+        dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/org?view=accepted`
+      }).catch(() => {});
+    } else {
+      // Student sent the request, org accepted — notify student
+      sendMatchRequestAcceptedEmail({
+        to: updated.student.user.email,
+        recipientName: updated.student.fullName,
+        acceptorName: updated.orgProfile.organization,
+        opportunityTitle: updated.opportunity.title,
+        contactEmail: updated.orgProfile.contactEmail,
+        dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/student?view=matches`
+      }).catch(() => {});
+    }
+  }
 
   return redirectWithNotice(request, redirectTo, "success", "Request updated");
 }

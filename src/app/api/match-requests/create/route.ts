@@ -1,7 +1,7 @@
 import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentUser, requireSameOrigin, safeRedirectTo } from "@/lib/auth";
-import { sendMatchRequestEmail } from "@/lib/notifications";
+import { sendMatchRequestReceivedEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithNotice(request: Request, redirectTo: string, key: "error" | "success", value: string) {
@@ -103,17 +103,23 @@ export async function POST(request: Request) {
   });
 
   if (initiatedBy === RequestInitiator.STUDENT) {
-    await sendMatchRequestEmail({
+    sendMatchRequestReceivedEmail({
       to: opportunity.orgProfile.contactEmail,
-      subject: `New match request from ${student.fullName}`,
-      text: `Student ${student.fullName} requested a match for "${opportunity.title}".${message ? ` Message: ${message}` : ""}`
-    });
+      recipientName: opportunity.orgProfile.organization,
+      senderName: student.fullName,
+      opportunityTitle: opportunity.title,
+      message,
+      dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/org?view=incoming`
+    }).catch(() => {});
   } else {
-    await sendMatchRequestEmail({
+    sendMatchRequestReceivedEmail({
       to: student.user.email,
-      subject: `${opportunity.orgProfile.organization} sent you a match request`,
-      text: `${opportunity.orgProfile.organization} requested a match with you for "${opportunity.title}".${message ? ` Message: ${message}` : ""}`
-    });
+      recipientName: student.fullName,
+      senderName: opportunity.orgProfile.organization,
+      opportunityTitle: opportunity.title,
+      message,
+      dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/student?view=incoming`
+    }).catch(() => {});
   }
 
   return redirectWithNotice(request, redirectTo, "success", "Request sent");
