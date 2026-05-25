@@ -397,8 +397,8 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                 <input name="contactEmail" defaultValue={org.contactEmail} required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
               </label>
               <label className="text-sm font-medium text-slate-700">
-                Contact Phone
-                <input name="contactPhone" defaultValue={org.contactPhone || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+                Contact Phone *
+                <input name="contactPhone" type="tel" required defaultValue={org.contactPhone || ""} placeholder={org.contactPhone ? "" : "Required — students will see this"} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
               </label>
               <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
                 <legend className="px-1 text-sm font-semibold text-slate-900">Required Skills</legend>

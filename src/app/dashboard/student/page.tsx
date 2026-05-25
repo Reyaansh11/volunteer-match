@@ -57,7 +57,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
   }
 
   const opportunities = await prisma.opportunity.findMany({
-    where: { orgProfile: { status: "APPROVED" } },
+    where: { archived: false, orgProfile: { status: "APPROVED" } },
     include: {
       orgProfile: true,
       skills: {

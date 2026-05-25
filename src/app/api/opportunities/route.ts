@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const opportunities = await prisma.opportunity.findMany({
-    where: { orgProfile: { status: "APPROVED" } },
+    where: { archived: false, orgProfile: { status: "APPROVED" } },
     include: {
       orgProfile: true,
       skills: {

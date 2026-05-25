@@ -26,7 +26,8 @@ export async function POST(request: Request) {
     return NextResponse.redirect(new URL(`${redirectTo}&error=Opportunity+not+found`, request.url), 303);
   }
 
-  await prisma.opportunity.delete({ where: { id: opportunityId } });
+  // Soft-delete: preserves service hours and match history for students
+  await prisma.opportunity.update({ where: { id: opportunityId }, data: { archived: true } });
 
   return NextResponse.redirect(new URL("/dashboard/org?view=opportunities&success=Opportunity+removed", request.url), 303);
 }

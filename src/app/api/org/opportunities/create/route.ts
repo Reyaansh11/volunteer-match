@@ -32,8 +32,8 @@ export async function POST(request: Request) {
   const contactPhone = String(formData.get("contactPhone") || user.org.contactPhone || "").trim();
   const skills = parseSkillsFromForm(formData, "skills", "skillsCustom");
 
-  if (!title || !description || !normalizedCommitment || !availability || !contactEmail) {
-    return NextResponse.redirect(new URL("/dashboard/org?error=Missing+required+fields", request.url), 303);
+  if (!title || !description || !normalizedCommitment || !availability || !contactEmail || !contactPhone) {
+    return NextResponse.redirect(new URL("/dashboard/org?error=Missing+required+fields+(contact+phone+is+required)", request.url), 303);
   }
   if (title.length > 200) return NextResponse.redirect(new URL("/dashboard/org?error=Title+must+be+under+200+characters", request.url), 303);
   if (description.length > 5000) return NextResponse.redirect(new URL("/dashboard/org?error=Description+must+be+under+5000+characters", request.url), 303);
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       radiusKm: Number.isFinite(radius) ? toKilometers(radius, radiusUnit) : toKilometers(12, radiusUnit),
       radiusUnit,
       contactEmail,
-      contactPhone: contactPhone || null
+      contactPhone
     }
   });
 
