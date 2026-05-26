@@ -3,7 +3,7 @@ import { Prisma, UserRole } from "@prisma/client";
 import {
   buildAvailabilityFromForm,
   createSession,
-  estimateLatLngFromZip,
+  lookupZipLatLng,
   getSessionCookieOptions,
   hashPassword,
   parseSkillsFromForm,
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     siteReachable = false;
   }
 
-  const latLng = estimateLatLngFromZip(zipCode);
+  const latLng = await lookupZipLatLng(zipCode);
 
   try {
     const user = await prisma.user.create({

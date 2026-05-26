@@ -4,7 +4,7 @@ import { randomBytes } from "crypto";
 import {
   buildAvailabilityFromForm,
   createSession,
-  estimateLatLngFromZip,
+  lookupZipLatLng,
   getSessionCookieOptions,
   hashPassword,
   parseSkillsFromForm,
@@ -49,10 +49,14 @@ export async function POST(request: Request) {
   const phone = String(formData.get("phone") || "").trim();
   const parsedSkills = parseSkillsFromForm(formData, "skills", "skillsCustom");
   const parentConsent = formData.get("parentConsent") === "on";
+  const ageConfirmed = formData.get("ageConfirmed") === "on";
   const grade = String(formData.get("grade") || "").trim();
 
   if (!email || !password || !fullName || !zipCode || !availability || parsedSkills.length === 0 || !grade) {
     return redirectWithError(request, "Please complete all required fields.");
+  }
+  if (!ageConfirmed) {
+    return redirectWithError(request, "You must confirm you are 13 years of age or older to register.");
   }
   if (password.length < 8) return redirectWithError(request, "Password must be at least 8 characters.");
   if (email.length > 254) return redirectWithError(request, "Email address is too long.");
@@ -60,7 +64,7 @@ export async function POST(request: Request) {
   if (personalStatement.length > 2000) return redirectWithError(request, "Personal statement must be under 2000 characters.");
   if (school.length > 150) return redirectWithError(request, "School name is too long.");
 
-  const latLng = estimateLatLngFromZip(zipCode);
+  const latLng = await lookupZipLatLng(zipCode);
   try {
     const user = await prisma.user.create({
       data: {

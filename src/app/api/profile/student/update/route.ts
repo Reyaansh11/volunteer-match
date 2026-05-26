@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import {
-  estimateLatLngFromZip,
+  lookupZipLatLng,
   getCurrentUser,
   parseSkillsFromForm,
   requireSameOrigin
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   }
 
   const studentId = user.student.id;
-  const latLng = estimateLatLngFromZip(zipCode);
+  const latLng = await lookupZipLatLng(zipCode);
 
   try {
     await prisma.$transaction(async (tx) => {

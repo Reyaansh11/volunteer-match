@@ -112,9 +112,18 @@ export default async function StudentRegisterPage({ searchParams }: StudentRegis
               ))}
             </select>
           </label>
+          <div className="md:col-span-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <strong>Age requirement:</strong> ServeConnect is only available to students who are 13 years of age or older. Students in grades 6–8 may register if they have already turned 13.
+          </div>
+
+          <label className="md:col-span-2 flex items-start gap-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+            <input name="ageConfirmed" type="checkbox" required className="mt-0.5 shrink-0" />
+            <span>I confirm that I am <strong>13 years of age or older</strong>. I understand that accounts for users under 13 will be removed.</span>
+          </label>
+
           <label className="md:col-span-2 flex items-center gap-2 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
             <input name="parentConsent" type="checkbox" />
-            Parent/guardian consent has been obtained if required.
+            Parent/guardian consent has been obtained if required by my school or program.
           </label>
 
           <button type="submit" className="md:col-span-2 rounded-md bg-brand-700 px-4 py-2 font-medium text-white hover:bg-brand-500">

@@ -144,14 +144,54 @@ export function safeRedirectTo(input: string, fallback = "/"): string {
   return fallback;
 }
 
+/**
+ * Look up the geographic center of a US ZIP code via the free Zippopotam.us API.
+ * Falls back to a rough regional estimate if the API is unavailable so registration
+ * never hard-fails. Real coordinates are what matter for distance matching.
+ */
+export async function lookupZipLatLng(zipCode: string): Promise<{ lat: number; lng: number }> {
+  const safeZip = zipCode.replace(/\D/g, "").slice(0, 5).padStart(5, "0");
+
+  try {
+    const res = await fetch(`https://api.zippopotam.us/us/${safeZip}`, {
+      signal: AbortSignal.timeout(4000)
+    });
+    if (res.ok) {
+      const data = await res.json() as { places?: { latitude: string; longitude: string }[] };
+      const place = data.places?.[0];
+      if (place?.latitude && place?.longitude) {
+        return { lat: parseFloat(place.latitude), lng: parseFloat(place.longitude) };
+      }
+    }
+  } catch {
+    // API unreachable — fall through to regional estimate
+  }
+
+  // Regional fallback by ZIP prefix so at least the region is right
+  const numeric = Number(safeZip);
+  if (numeric < 20000) return { lat: 42.5,  lng: -71.0  }; // New England
+  if (numeric < 30000) return { lat: 38.9,  lng: -77.0  }; // Mid-Atlantic
+  if (numeric < 40000) return { lat: 33.7,  lng: -84.4  }; // Southeast
+  if (numeric < 50000) return { lat: 39.9,  lng: -82.9  }; // Ohio Valley
+  if (numeric < 60000) return { lat: 44.9,  lng: -93.1  }; // Upper Midwest
+  if (numeric < 70000) return { lat: 41.8,  lng: -87.6  }; // Great Lakes
+  if (numeric < 80000) return { lat: 29.7,  lng: -95.3  }; // South Central
+  if (numeric < 90000) return { lat: 39.7,  lng: -104.9 }; // Mountain
+  return                       { lat: 37.7,  lng: -122.4 };  // West Coast
+}
+
+/** @deprecated Use lookupZipLatLng (async) instead. */
 export function estimateLatLngFromZip(zipCode: string) {
-  const safeZip = zipCode.replace(/\D/g, "").slice(0, 5);
-  const numeric = Number(safeZip || "85000");
-  const offset = (numeric % 100) / 500;
-  return {
-    lat: 33.45 + offset,
-    lng: -112.07 + offset / 2
-  };
+  const numeric = Number(zipCode.replace(/\D/g, "").slice(0, 5) || "0");
+  if (numeric < 20000) return { lat: 42.5,  lng: -71.0  };
+  if (numeric < 30000) return { lat: 38.9,  lng: -77.0  };
+  if (numeric < 40000) return { lat: 33.7,  lng: -84.4  };
+  if (numeric < 50000) return { lat: 39.9,  lng: -82.9  };
+  if (numeric < 60000) return { lat: 44.9,  lng: -93.1  };
+  if (numeric < 70000) return { lat: 41.8,  lng: -87.6  };
+  if (numeric < 80000) return { lat: 29.7,  lng: -95.3  };
+  if (numeric < 90000) return { lat: 39.7,  lng: -104.9 };
+  return                       { lat: 37.7,  lng: -122.4 };
 }
 
 export function parseSkills(input: string) {

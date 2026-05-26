@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { estimateLatLngFromZip, getCurrentUser, requireSameOrigin } from "@/lib/auth";
+import { lookupZipLatLng, getCurrentUser, requireSameOrigin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithNotice(request: Request, key: "error" | "success", value: string) {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     return redirectWithNotice(request, "error", "Please complete all required fields.");
   }
 
-  const latLng = estimateLatLngFromZip(zipCode);
+  const latLng = await lookupZipLatLng(zipCode);
 
   try {
     await prisma.orgProfile.update({
