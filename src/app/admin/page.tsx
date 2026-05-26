@@ -33,45 +33,58 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const SEO_POST = {
-  title: "Why I Built ServeConnect: NHS Service Hours Shouldn't Require This Much Paperwork",
+  title: "How to Track NHS Service Hours Without Losing Paper Forms",
   slug: "nhs-service-hour-tracking",
   summary:
-    "NHS and NJHS chapters still track service hours on paper forms passed around in hallways. I built ServeConnect to fix that, and here is how it works.",
-  body: `## The Problem I Kept Seeing
+    "Most NHS and NJHS chapters still track volunteer hours on paper forms. ServeConnect is a free digital service hour tracker that replaces the whole workflow for students, advisors, and local organizations.",
+  body: `## The Problem with Traditional High School Volunteer Hour Forms
 
-Every NHS and NJHS chapter in the country has the same workflow: students find their own volunteer opportunities, show up, get a paper form signed by a supervisor, and hand it to their advisor. The advisor collects the forms, tallies the hours, and hopes nothing gets lost.
+Most NHS and NJHS chapters run on the same system: students find an opportunity, complete their National Honor Society volunteer hours, get a paper form signed by a supervisor, and hand it to their advisor. The advisor collects forms, tallies hours, and follows up on anything missing.
 
-That system works fine for a chapter of ten students. It falls apart at forty. At eighty it is a genuine mess.
+That works at a small scale. At forty or eighty students it breaks down. Forms get lost. Supervisors forget to sign. Advisors spend hours chasing paperwork from organizations that barely remember which student came in three weeks ago.
 
-Students forget to get forms signed. Forms get lost. Advisors spend their free periods tracking down missing paperwork from organizations that may or may not remember which student came in three weeks ago. The whole thing runs on good intentions and a lot of follow-up emails.
+I built ServeConnect to replace that entire workflow.
 
-I wanted to build something better.
+## A Free Digital Service Hour Tracker for Students and Advisors
 
-## What ServeConnect Does
+ServeConnect is a free platform that connects NHS and NJHS students with vetted local organizations. Here is how it works:
 
-ServeConnect is a free platform that connects NHS and NJHS students with vetted local organizations. Students build a profile with their skills, availability, and service goals. Organizations post opportunities with specific schedules and what kind of help they need. The platform matches students to opportunities based on location, availability, and fit.
+Students create a profile with their skills, availability, and service goals. Organizations post opportunities with schedules and what kind of help they need. The platform matches students to nearby opportunities based on distance and fit.
 
-When both sides accept a match, contact information is shared and the service relationship begins. After the student completes their hours, the organization logs the completion directly through the platform. A verified service record is generated automatically.
+When both sides accept a match, contact details are shared and the service begins. After the student completes their hours, the organization logs the completion directly on the platform. A verified service hour record is generated immediately, no paper required.
 
-No paper forms. No missing signatures. The record lives in the system and the student can share it with their advisor whenever they need it.
+To verify student volunteer hours online, advisors just ask the student to share their record. Everything is already there: organization name, date, hours, and supervisor confirmation.
 
 ## How the Matching Works
 
-The matching algorithm factors in distance from the student's ZIP code, weekly availability, and skills. A student who is free on Saturday mornings and has tutoring experience will see tutoring opportunities nearby ranked higher than anything else.
+The matching algorithm factors in ZIP code distance, weekly availability, and skills. A student who is free Saturday mornings and wants to tutor will see tutoring programs nearby ranked first.
 
-Organizations are reviewed and approved before they can post. Students only see legitimate community programs, not random postings from the internet.
+Every organization on ServeConnect is reviewed and approved before they can post. Students only see legitimate community programs. That makes it straightforward to confirm that each opportunity qualifies under high school graduation community service requirements and NHS standards.
 
-## For Advisors
+## Streamlining NHS and NJHS Chapter Administration
 
-Advisors do not need to set anything up. Students register on their own, find opportunities, and complete their service. The advisor can ask a student to share their service record at any time and it is already there, complete with the organization name, hours, date, and supervisor confirmation.
+For advisors, the goal was to make the administrative side as hands-off as possible.
 
-The goal was to make the advisor's job as hands-off as possible while keeping the verification rigorous.
+Students register on their own, find opportunities, and complete their service. No printable service hour log sheets to collect. No missing signatures. No tallying hours at the end of the semester. The verified record exists from the moment the organization confirms completion.
 
-## Try It
+Advisors do not need to create an account or manage anything. The system does the tracking. The advisor just reviews records when students submit them.
 
-ServeConnect is free for both students and organizations. If you want to see it in action or have questions about how it works for your chapter, reach out at reyaansh.tomar11@gmail.com.
+## Frequently Asked Questions
 
-serveconnect.org`
+? How do school advisors verify community service hours on ServeConnect?
+Advisors do not need to create an account. When a student completes their work, the organization logs it directly on the platform and a verified record is generated. The student shares that record with their advisor whenever it is needed.
+
+? Is ServeConnect free for National Honor Society (NHS) chapters?
+Yes, ServeConnect is completely free for students, chapters, and organizations. There are no paid tiers.
+
+? Can students use ServeConnect for requirements beyond NHS?
+Yes. ServeConnect works for any program that requires documented community service hours, including NJHS, Key Club, graduation requirements, and college applications.
+
+## Get Started
+
+ServeConnect is free for both students and organizations. Setup takes about five minutes.
+
+Questions? Reach out at reyaansh.tomar11@gmail.com.`
 };
 
 export default function AdminPage() {

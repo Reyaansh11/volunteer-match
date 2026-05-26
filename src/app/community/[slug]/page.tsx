@@ -21,27 +21,49 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * Converts the plain-text post body to React elements.
  * Rules:
  *   - Lines starting with "## " become <h2> headings
- *   - Blank lines (or \n\n) separate paragraphs
+ *   - Lines starting with "? "  are FAQ questions; the NEXT block is the answer
+ *   - Blank lines (or \n\n) separate paragraphs / FAQ pairs
  *   - Everything else is a paragraph
  */
 function renderBody(body: string) {
   const blocks = body.split(/\n{2,}/);
-  return blocks.map((block, i) => {
-    const trimmed = block.trim();
-    if (!trimmed) return null;
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+  while (i < blocks.length) {
+    const trimmed = blocks[i].trim();
+    if (!trimmed) { i++; continue; }
+
     if (trimmed.startsWith("## ")) {
-      return (
+      elements.push(
         <h2 key={i} className="mt-8 text-xl font-semibold text-slate-900">
           {trimmed.slice(3)}
         </h2>
       );
+      i++;
+      continue;
     }
-    return (
+
+    if (trimmed.startsWith("? ")) {
+      const question = trimmed.slice(2);
+      const answer = blocks[i + 1]?.trim() ?? "";
+      elements.push(
+        <div key={i} className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-5 py-4">
+          <p className="font-semibold text-slate-900">{question}</p>
+          {answer ? <p className="mt-2 text-sm leading-relaxed text-slate-600">{answer}</p> : null}
+        </div>
+      );
+      i += 2; // consume both question and answer blocks
+      continue;
+    }
+
+    elements.push(
       <p key={i} className="mt-4 leading-relaxed text-slate-700">
         {trimmed}
       </p>
     );
-  });
+    i++;
+  }
+  return elements;
 }
 
 export default async function CommunityPostPage({ params }: Props) {
@@ -100,13 +122,13 @@ export default async function CommunityPostPage({ params }: Props) {
               href="/register/student"
               className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500 transition-colors"
             >
-              Student Sign Up
+              Start Tracking Hours Free
             </Link>
             <Link
               href="/register/org"
               className="rounded-lg border border-brand-700/30 bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50 transition-colors"
             >
-              Register Organization
+              Register Your Chapter
             </Link>
           </div>
         </div>
