@@ -160,8 +160,8 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
       <div className="space-y-6">
-        <section className="relative overflow-hidden rounded-3xl border border-brand-700/20 bg-white/95 p-6 shadow-sm sm:p-8">
-          <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-gradient-to-br from-brand-50 to-transparent" />
+        <section className="rounded-3xl border border-brand-700/20 bg-white/95 p-6 shadow-sm sm:p-8">
+
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-2xl font-semibold text-slate-900">Program Dashboard</h1>
             <div className="flex flex-wrap gap-2">
