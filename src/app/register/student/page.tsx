@@ -107,7 +107,7 @@ export default async function StudentRegisterPage({ searchParams }: StudentRegis
             Grade *
             <select name="grade" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
               <option value="">Select grade</option>
-              {[6, 7, 8, 9, 10, 11, 12].map((g) => (
+              {[8, 9, 10, 11, 12].map((g) => (
                 <option key={g} value={String(g)}>{g}th Grade</option>
               ))}
             </select>
