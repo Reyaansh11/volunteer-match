@@ -57,6 +57,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <Link href="/opportunities" className={`${navItemClass} text-slate-700 hover:bg-slate-100`}>
                   Opportunities
                 </Link>
+                <Link href="/community" className={`${navItemClass} text-slate-700 hover:bg-slate-100`}>
+                  In the Community
+                </Link>
                 {user ? (
                   <>
                     {user.role === "ORG" ? (

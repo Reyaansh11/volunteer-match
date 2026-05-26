@@ -175,6 +175,28 @@ export default async function Home() {
           </article>
         </section>
 
+        {/* ── In the Community ── */}
+        <section className="rounded-2xl border border-brand-700/20 bg-brand-50 p-6 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span className="inline-block rounded-full bg-brand-700/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-700">
+                In the Community
+              </span>
+              <h2 className="mt-2 text-xl text-slate-900">Stories &amp; Updates</h2>
+              <p className="mt-1 max-w-xl text-sm leading-relaxed text-slate-600">
+                See how students and organizations across the country are using ServeConnect — plus
+                advice for NHS and NJHS advisors on making service hours work.
+              </p>
+            </div>
+            <Link
+              href="/community"
+              className="shrink-0 self-start rounded-lg bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-500 transition-colors sm:self-auto"
+            >
+              Read posts →
+            </Link>
+          </div>
+        </section>
+
         {/* ── How It Works ── */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl text-slate-900">How ServeConnect Works</h2>
