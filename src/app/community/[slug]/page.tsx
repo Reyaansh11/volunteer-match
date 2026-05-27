@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * Converts the plain-text post body to React elements.
  * Rules:
  *   - Lines starting with "## " become <h2> headings
- *   - Lines starting with "? "  are FAQ questions; the NEXT block is the answer
+ *   - Lines starting with "? "  are FAQ items: "? Question\nAnswer" in one block
  *   - Blank lines (or \n\n) separate paragraphs / FAQ pairs
  *   - Everything else is a paragraph
  */
@@ -44,15 +44,17 @@ function renderBody(body: string) {
     }
 
     if (trimmed.startsWith("? ")) {
-      const question = trimmed.slice(2);
-      const answer = blocks[i + 1]?.trim() ?? "";
+      // Question and answer live in the same block, separated by a single \n
+      const newlineIdx = trimmed.indexOf("\n");
+      const question = newlineIdx > 0 ? trimmed.slice(2, newlineIdx).trim() : trimmed.slice(2).trim();
+      const answer   = newlineIdx > 0 ? trimmed.slice(newlineIdx + 1).trim() : "";
       elements.push(
         <div key={i} className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-5 py-4">
           <p className="font-semibold text-slate-900">{question}</p>
           {answer ? <p className="mt-2 text-sm leading-relaxed text-slate-600">{answer}</p> : null}
         </div>
       );
-      i += 2; // consume both question and answer blocks
+      i++; // this block contained both; just advance by one
       continue;
     }
 
