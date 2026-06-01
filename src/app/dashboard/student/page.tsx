@@ -208,9 +208,13 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
             Grade
             <select name="grade" defaultValue={student.grade || ""} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
               <option value="">— not set —</option>
-              {[8, 9, 10, 11, 12].map((g) => (
-                <option key={g} value={String(g)}>{g}th Grade</option>
-              ))}
+              <option value="8">8th Grade</option>
+              <option value="9">9th Grade</option>
+              <option value="10">10th Grade</option>
+              <option value="11">11th Grade</option>
+              <option value="12">12th Grade</option>
+              <option value="college">College Student</option>
+              <option value="not-in-school">Not in School</option>
             </select>
           </label>
           <label className="text-sm font-medium text-slate-700">

@@ -107,13 +107,17 @@ export default async function StudentRegisterPage({ searchParams }: StudentRegis
             Grade *
             <select name="grade" required className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
               <option value="">Select grade</option>
-              {[8, 9, 10, 11, 12].map((g) => (
-                <option key={g} value={String(g)}>{g}th Grade</option>
-              ))}
+              <option value="8">8th Grade</option>
+              <option value="9">9th Grade</option>
+              <option value="10">10th Grade</option>
+              <option value="11">11th Grade</option>
+              <option value="12">12th Grade</option>
+              <option value="college">College Student</option>
+              <option value="not-in-school">Not in School</option>
             </select>
           </label>
           <div className="md:col-span-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            <strong>Age requirement:</strong> ServeConnect is only available to students who are 13 years of age or older. Students in grades 6–8 may register if they have already turned 13.
+            <strong>Age requirement:</strong> You must be 13 years of age or older to register.
           </div>
 
           <label className="md:col-span-2 flex items-start gap-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
