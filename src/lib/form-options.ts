@@ -87,6 +87,37 @@ export const SUPERVISOR_TITLE_OPTIONS = [
   "Other"
 ] as const;
 
+export const GRADE_OPTIONS = [
+  { value: "8",             label: "8th Grade" },
+  { value: "9",             label: "9th Grade" },
+  { value: "10",            label: "10th Grade" },
+  { value: "11",            label: "11th Grade" },
+  { value: "12",            label: "12th Grade" },
+  { value: "college",       label: "College Student" },
+  { value: "not-in-school", label: "Not in School" },
+] as const;
+
+const GRADE_RANK: Record<string, number> = {
+  "8": 8, "9": 9, "10": 10, "11": 11, "12": 12,
+  "college": 13, "not-in-school": 14
+};
+
+export function gradeRank(grade: string | null | undefined): number {
+  return GRADE_RANK[grade ?? ""] ?? 99;
+}
+
+export function meetsGradeRequirement(
+  studentGrade: string | null | undefined,
+  oppMinGrade: string | null | undefined
+): boolean {
+  if (!oppMinGrade) return true;
+  return gradeRank(studentGrade) >= gradeRank(oppMinGrade);
+}
+
+export function gradeLabel(grade: string | null | undefined): string {
+  return GRADE_OPTIONS.find((g) => g.value === grade)?.label ?? (grade ?? "");
+}
+
 export const DAY_OPTIONS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 export const TIME_OPTIONS = [

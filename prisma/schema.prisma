@@ -121,6 +121,7 @@ model Opportunity {
   timeZone           String               @default("America/Phoenix")
   contactEmail       String
   contactPhone       String?
+  minGrade           String?
   archived           Boolean                @default(false)
   radiusKm           Float                  @default(20)
   radiusUnit         String                 @default("km")

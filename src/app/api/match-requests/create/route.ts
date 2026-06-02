@@ -2,6 +2,7 @@ import { MatchRequestStatus, RequestInitiator, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentUser, requireSameOrigin, safeRedirectTo } from "@/lib/auth";
 import { sendMatchRequestReceivedEmail } from "@/lib/email";
+import { meetsGradeRequirement, gradeLabel } from "@/lib/form-options";
 import { prisma } from "@/lib/prisma";
 
 function redirectWithNotice(request: Request, redirectTo: string, key: "error" | "success", value: string) {
@@ -75,6 +76,19 @@ export async function POST(request: Request) {
   });
   if (!student) {
     return redirectWithNotice(request, redirectTo, "error", "Student not found");
+  }
+
+  // Grade restriction check — enforced for both directions
+  if (opportunity.minGrade) {
+    if (!meetsGradeRequirement(student.grade, opportunity.minGrade)) {
+      const required = gradeLabel(opportunity.minGrade);
+      const studentGrade = student.grade ? gradeLabel(student.grade) : "unknown";
+      const msg =
+        user.role === UserRole.STUDENT
+          ? `This opportunity requires ${required} or above. Your grade (${studentGrade}) does not meet this requirement.`
+          : `This student is in ${studentGrade}, which does not meet the minimum grade requirement (${required}+) for this opportunity.`;
+      return redirectWithNotice(request, redirectTo, "error", msg);
+    }
   }
 
   const existing = await prisma.matchRequest.findFirst({

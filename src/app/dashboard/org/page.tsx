@@ -9,6 +9,8 @@ import {
   DISTANCE_UNIT_OPTIONS,
   formatTimeZoneLabel,
   fromKilometers,
+  gradeLabel,
+  meetsGradeRequirement,
   normalizeDistanceUnit,
   SKILL_OPTIONS,
   SUPERVISOR_TITLE_OPTIONS
@@ -425,6 +427,28 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                   <input name="skillsCustom" placeholder="mobility support, sing-alongs" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
                 </label>
               </fieldset>
+              <fieldset className="md:col-span-2 rounded-lg border border-slate-200 p-4">
+                <legend className="px-1 text-sm font-semibold text-slate-900">Grade Restriction</legend>
+                <input type="checkbox" name="gradeRestriction" id="gr-check" className="peer" />
+                <label htmlFor="gr-check" className="ml-2 cursor-pointer select-none text-sm text-slate-700">
+                  Restrict by grade level
+                </label>
+                <div className="mt-3 hidden items-center gap-3 peer-checked:flex flex-wrap">
+                  <label className="text-sm font-medium text-slate-700 shrink-0">
+                    Minimum grade:
+                  </label>
+                  <select name="minGrade" className="rounded-md border border-slate-300 px-3 py-1.5 text-sm">
+                    <option value="8">8th Grade and up</option>
+                    <option value="9">9th Grade and up</option>
+                    <option value="10">10th Grade and up</option>
+                    <option value="11">11th Grade and up</option>
+                    <option value="12">12th Grade only</option>
+                    <option value="college">College students only</option>
+                  </select>
+                  <p className="text-xs text-slate-500 w-full">Students below this grade will not be able to send a match request.</p>
+                </div>
+              </fieldset>
+
               <button type="submit" className="md:col-span-2 rounded-md bg-brand-700 px-4 py-2 font-medium text-white hover:bg-brand-500">
                 Post Opportunity
               </button>
@@ -448,6 +472,14 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                     <p className="mt-1 text-sm text-slate-700">
                       Radius: {fromKilometers(opp.radiusKm, selectedRadiusUnit).toFixed(1)} {selectedRadiusUnit}
                     </p>
+                    {opp.minGrade ? (
+                      <p className="mt-1 text-sm text-slate-700">
+                        Grade restriction:{" "}
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                          {gradeLabel(opp.minGrade)}+
+                        </span>
+                      </p>
+                    ) : null}
                     <form action="/api/org/opportunities/delete" method="post" className="mt-3">
                       <input type="hidden" name="opportunityId" value={opp.id} />
                       <input type="hidden" name="redirectTo" value="/dashboard/org?view=opportunities" />
@@ -493,6 +525,7 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                   const status = requestKeyToStatus.get(`${selectedOpportunity.id}:${student.studentId}`);
                   const isAccepted = status === MatchRequestStatus.ACCEPTED;
                   const canRequest = !status || status === MatchRequestStatus.REJECTED || status === MatchRequestStatus.CANCELLED;
+                  const gradeOk = meetsGradeRequirement(student.grade, selectedOpportunity.minGrade ?? null);
 
                   return (
                     <article key={student.studentId} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -516,11 +549,18 @@ export default async function OrgDashboardPage({ searchParams }: OrgDashboardPro
                         Distance: {fromKilometers(student.distanceKm, selectedRadiusUnit).toFixed(1)} {selectedRadiusUnit}
                       </p>
                       <p className="mt-1 text-sm text-slate-700">Availability: {student.availability} ({formatTimeZoneLabel(student.timeZone)})</p>
+                      <p className="mt-1 text-sm text-slate-700">Grade: {student.grade ? gradeLabel(student.grade) : "Not set"}</p>
                       <p className="mt-1 text-sm text-slate-700">Matched skills: {student.skillsMatched.join(", ") || "None"}</p>
 
                       {status ? <p className="mt-2 text-sm text-slate-700">Request status: {status}</p> : null}
 
-                      {canRequest ? (
+                      {!gradeOk ? (
+                        <p className="mt-3 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
+                          This student is in {student.grade ? gradeLabel(student.grade) : "an unknown grade"}, which does not meet the minimum grade requirement ({gradeLabel(selectedOpportunity.minGrade ?? "")}+) for this opportunity.
+                        </p>
+                      ) : null}
+
+                      {canRequest && gradeOk ? (
                         <form action="/api/match-requests/create" method="post" className="mt-3 flex flex-col gap-2">
                           <input type="hidden" name="opportunityId" value={selectedOpportunity.id} />
                           <input type="hidden" name="studentId" value={student.studentId} />

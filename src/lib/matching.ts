@@ -118,6 +118,7 @@ export function rankOpportunities(student: StudentWithSkills, opportunities: Opp
       contactEmail: opportunity.contactEmail,
       contactPhone: opportunity.contactPhone,
       websiteUrl: opportunity.orgProfile.websiteUrl,
+      minGrade: opportunity.minGrade ?? null,
       distanceKm: round(distanceKm),
       rank: 0,
       breakdown: {
@@ -173,6 +174,7 @@ export function rankStudentsForOpportunity(
       programAffiliation: student.programAffiliation,
       personalStatement: student.personalStatement,
       letterOfRecUrl: student.letterOfRecUrl,
+      grade: student.grade ?? null,
       averageRating: averageRating ? round(averageRating) : null,
       reviewCount: student.reviewsReceived.length,
       rank: 0,
@@ -195,6 +197,7 @@ export function rankStudentsForOpportunity(
       programAffiliation: item.programAffiliation,
       personalStatement: item.personalStatement,
       letterOfRecUrl: item.letterOfRecUrl,
+      grade: item.grade,
       averageRating: item.averageRating,
       reviewCount: item.reviewCount,
       rank: index + 1,

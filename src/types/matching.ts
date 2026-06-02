@@ -15,6 +15,7 @@ export type RankedOpportunity = {
   contactEmail: string;
   contactPhone: string | null;
   websiteUrl: string;
+  minGrade: string | null;
   distanceKm: number;
   rank: number;
   breakdown: MatchBreakdown;
@@ -30,6 +31,7 @@ export type RankedStudent = {
   programAffiliation: string | null;
   personalStatement: string | null;
   letterOfRecUrl: string | null;
+  grade: string | null;
   averageRating: number | null;
   reviewCount: number;
   rank: number;

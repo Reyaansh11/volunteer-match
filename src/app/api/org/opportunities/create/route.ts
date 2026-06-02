@@ -26,6 +26,9 @@ export async function POST(request: Request) {
   const radiusUnit = normalizeDistanceUnit(String(formData.get("radiusUnit") || ""));
   const timeZone = normalizeUsTimeZone(String(formData.get("availabilityTimeZone") || ""));
   const oneDayOpportunity = formData.get("oneDayOpportunity") === "on";
+  const gradeRestriction = formData.get("gradeRestriction") === "on";
+  const minGradeRaw = String(formData.get("minGrade") || "").trim();
+  const minGrade = gradeRestriction && minGradeRaw ? minGradeRaw : null;
   const normalizedCommitment =
     oneDayOpportunity && requiredCommitment ? "One-time event" : requiredCommitment;
   const contactEmail = String(formData.get("contactEmail") || user.org.contactEmail).trim().toLowerCase();
@@ -49,6 +52,7 @@ export async function POST(request: Request) {
       timeZone,
       radiusKm: Number.isFinite(radius) ? toKilometers(radius, radiusUnit) : toKilometers(12, radiusUnit),
       radiusUnit,
+      minGrade,
       contactEmail,
       contactPhone
     }

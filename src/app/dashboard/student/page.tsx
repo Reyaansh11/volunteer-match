@@ -5,6 +5,8 @@ import {
   DISTANCE_UNIT_OPTIONS,
   fromKilometers,
   formatTimeZoneLabel,
+  gradeLabel,
+  meetsGradeRequirement,
   normalizeDistanceUnit,
   normalizeUsTimeZone,
   SKILL_OPTIONS,
@@ -508,6 +510,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           const existingRequest = requestByOpportunity.get(match.opportunityId);
           const acceptedRequest = acceptedByOpportunity.get(match.opportunityId);
           const canSend = !existingRequest || existingRequest.status === MatchRequestStatus.REJECTED || existingRequest.status === MatchRequestStatus.CANCELLED;
+          const gradeOk = meetsGradeRequirement(student.grade, match.minGrade);
 
           return (
             <article key={match.opportunityId} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -527,6 +530,14 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
               </p>
               <p className="mt-2 text-sm text-slate-700">Matched skills: {match.skillsMatched.join(", ") || "None"}</p>
               <p className="mt-2 text-sm text-slate-700">Missing required skills: {match.skillsMissing.join(", ") || "None"}</p>
+              {match.minGrade ? (
+                <p className="mt-2 text-sm text-slate-700">
+                  Grade requirement:{" "}
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${gradeOk ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                    {gradeLabel(match.minGrade)}+
+                  </span>
+                </p>
+              ) : null}
 
               {acceptedRequest ? (
                 <p className="mt-3 rounded-md bg-green-50 p-2 text-sm text-green-700">
@@ -540,7 +551,13 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
                 <p className="mt-3 text-sm text-slate-700">Request status: {existingRequest.status}</p>
               ) : null}
 
-              {canSend ? (
+              {!gradeOk ? (
+                <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                  This opportunity requires {gradeLabel(match.minGrade ?? "")} or above. You cannot send a match request because your grade ({student.grade ? gradeLabel(student.grade) : "not set"}) does not meet this requirement.
+                </p>
+              ) : null}
+
+              {canSend && gradeOk ? (
                 <form action="/api/match-requests/create" method="post" className="mt-3 flex flex-col gap-2">
                   <input type="hidden" name="opportunityId" value={match.opportunityId} />
                   <input type="hidden" name="redirectTo" value="/dashboard/student?view=ranked" />
