@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { Inter, Hanken_Grotesk } from "next/font/google";
@@ -25,9 +26,9 @@ export const metadata: Metadata = {
   description: "Connect students with local service opportunities",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: [{ url: "/icon.png", type: "image/png" }],
-    shortcut: [{ url: "/icon.png", type: "image/png" }],
-    apple: [{ url: "/icon.png", type: "image/png" }]
+    icon: [{ url: "/logo.png", type: "image/png" }],
+    shortcut: [{ url: "/logo.png", type: "image/png" }],
+    apple: [{ url: "/logo.png", type: "image/png" }]
   }
 };
 
@@ -48,8 +49,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <header className="print:hidden sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur-md">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               {/* Logo */}
-              <Link href="/" className="font-display text-lg font-bold tracking-tight text-brand-700">
-                ServeConnect
+              <Link href="/" className="flex items-center gap-2.5">
+                <Image src="/logo.png" alt="ServeConnect" width={36} height={36} className="rounded-full" priority />
+                <span className="font-display text-lg font-bold tracking-tight text-brand-700">ServeConnect</span>
               </Link>
 
               {/* Nav links */}
